@@ -11,7 +11,7 @@ The project uses a **v4 A78 Header** (an extension of the standard 128-byte head
 - **Cart Type Flag**: Bit 2 of the Cart Type low byte (Offset 54) is force-set as a redundant "YM2149 present" flag for emulator detection (`--ym2149`).
 - **Mapper** (Offset 64): `0` = Linear (fixed 32KB, no bankswitching). `1` = 32-pin board's YM-IOA bank scheme — fixed 32KB at `$8000-$FFFF` plus a 16KB window at `$4000-$7FFF` bank-selected via the YM2149's IOA port (see [Hardware-32pin.md](Hardware-32pin.md)). `a78tool` sets this from the `mapper` field in its config JSON; for mapper 1 the input binary must be the full 128KB or 256KB ROM image, not just the fixed bank.
 
-When the `a7800` or `js7800` forks detect YM2149 hardware in a `.a78` file, they automatically enable the YM2149 engine and map it to the **$0800–$0801** range.
+When the `a7800`, `js7800`, or `test7800` forks detect YM2149 hardware in a `.a78` file, they automatically enable the YM2149 engine and map it to the **$0800–$0801** range.
 
 ## a7800 (Desktop)
 
@@ -36,3 +36,13 @@ A browser-based emulator that allows for zero-setup testing and sharing.
   - **WebAudio Integration**: Bridges the 6502 register writes to the browser's audio engine for real-time playback.
   - **Rapid Iteration**: Load your `.a78` builds directly into the browser.
   - **32-Pin Bank Switching**: Emulates the Mapper 1 YM-IOA bank scheme (`CARTRIDGE_TYPE_YM_BANKED` in `Cartridge.js`) — the `$4000-$7FFF` window follows the YM2149's IO Port A whenever register 7 has it configured as an output, including the 128KB chip's bank-number aliasing (no A17 pin) and the power-on pull-up float to the fixed-region mirror.
+
+## test7800 (Desktop, cross-platform)
+
+A Go-based experimental 7800 emulator (6502/TIA/RIOT/ARM core shared with [Gopher2600](https://github.com/JetSetIlly/Gopher2600)) with a built-in command-line debugger, forked to add YM2149 support.
+
+- **Repository**: [https://github.com/jbsohn/test7800](https://github.com/jbsohn/test7800)
+- **Branch**: `ym2149`
+- **Key Enhancements**:
+  - **YM2149 PSG Emulation** (`hardware/ym2149`): mapped to the **$0800–$0801** range.
+  - **YM-IOA Banked Cartridge Support** (`hardware/memory/external/ymbanked.go`): implements the 32-pin board's Mapper 1 scheme, auto-detected from the v4 A78 header fingerprint (`hardware/memory/external/fingerprint.go`).

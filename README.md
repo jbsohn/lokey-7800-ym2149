@@ -100,7 +100,7 @@ This project is organized across 3 dedicated repositories:
   - **[28-Pin Board Hardware Spec](docs/Hardware-28pin.md)** — 28-pin schematic, PLD pinout, jumper tables.
   - **[32-Pin Board Hardware Spec](docs/Hardware-32pin.md)** — 32-pin schematic, ATF22V10 pinout, bank switching layout.
 - **[PCB Design & Routing Pipeline](docs/PCB.md)** — `tscircuit` React components, KiCad post-routing scripts, and Gerbers build pipeline.
-- **[Emulator Support](docs/Emulation.md)** — A78 header spec and `a7800` / `js7800` emulator forks.
+- **[Emulator Support](docs/Emulation.md)** — A78 header spec and `a7800` / `js7800` / `test7800` emulator forks.
 
 ---
 
