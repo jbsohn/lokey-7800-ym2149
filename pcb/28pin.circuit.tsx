@@ -5,6 +5,7 @@ import { Latch74HCT373 } from "./74HCT373";
 import { YM2149 } from "./YM2149";
 import { LM358 } from "./LM358";
 import { SolderJumper } from "./SolderJumper";
+import { PolarizedCap } from "./PolarizedCap";
 
 export default () => (
   <board
@@ -206,6 +207,7 @@ export default () => (
       connections={{
         VCC: "net.VCC",
         GND: "net.GND",
+        GND_FRONT: "net.GND",
         "30": "net.GND",
         A0: "net.A0", A1: "net.A1", A2: "net.A2", A3: "net.A3", A4: "net.A4",
         A5: "net.A5", A6: "net.A6", A7: "net.A7", A8: "net.A8", A9: "net.A9",
@@ -269,22 +271,6 @@ export default () => (
           L: "net.VCC",
           C: "net.ROM_ADDR14",
           R: "net.A14",
-        }}
-      />
-      <capacitor
-        name="C_BULK"
-        capacitance="10uF"
-        polarized
-        footprint="axial_p7.62mm"
-        pcbX="0mm"
-        pcbY="0mm"
-        layer="bottom"
-        schX={-6}
-        schY={-12}
-        pcbRotation={90}
-        connections={{
-          pin1: "net.VCC",
-          pin2: "net.GND",
         }}
       />
       <capacitor
@@ -458,7 +444,7 @@ export default () => (
           pin2: "net.RESET_DELAYED",
         }}
       />
-      <capacitor
+      <PolarizedCap
         name="C_RESET"
         capacitance="10uF"
         footprint="axial_p7.62mm"
@@ -593,7 +579,7 @@ export default () => (
             pin2: "net.CAP_PLUS",
           }}
         />
-        <capacitor
+        <PolarizedCap
           name="C_AUDIO_OUT"
           capacitance="10uF"
           footprint="axial_p7.62mm"

@@ -4,6 +4,8 @@ node_modules/
 # Build output
 dist/
 build/
+# tsci export drops <board>.circuit.json alongside the source .tsx
+*.circuit.json
 
 # Environment variables
 .env

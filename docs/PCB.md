@@ -10,6 +10,7 @@ Each board is a 2-layer cartridge PCB designed to fit standard Atari 7800 cartri
 
 - **`pcb/28pin.circuit.tsx`**: Single YM2149, ATF16V8B PLD, solder-jumper ROM size selection. Hardware spec: [Hardware-28pin.md](Hardware-28pin.md).
 - **`pcb/32pin.circuit.tsx`**: Single YM2149, ATF22V10 PLD, native DIP-32 socket with software bank switching. Hardware spec: [Hardware-32pin.md](Hardware-32pin.md).
+- **v0.2 Hardware Errata & Revisions**: [PCB-Revisions-v0.2.md](PCB-Revisions-v0.2.md) (known physical board errata and planned fixes for v0.3).
 
 ---
 

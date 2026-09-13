@@ -3,6 +3,7 @@ import { type ChipProps } from "tscircuit";
 export const ATF16V8B = (props: ChipProps) => (
   <chip
     {...props}
+    manufacturerPartNumber="ATF16V8B"
     footprint="dip20_w300mil"
     pinLabels={{
       1: "CLK",

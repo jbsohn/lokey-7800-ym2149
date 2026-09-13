@@ -40,13 +40,13 @@ const Atari7800EdgeConnector = (props: ChipProps) => {
       allowOffBoard
       pinLabels={{
         1: "RW", 2: "HALT", 3: "D3", 4: "D4", 5: "D5", 6: "D6", 7: "D7", 8: "A12",
-        9: "A10", 10: "A11", 11: "A9", 12: "A8", 13: "VCC", 14: "GND", 15: "A13", 16: "A14",
+        9: "A10", 10: "A11", 11: "A9", 12: "A8", 13: "VCC", 14: "GND_FRONT", 15: "A13", 16: "A14",
         17: "A15", 18: "Exaudio", 19: "A7", 20: "A6", 21: "A5", 22: "A4", 23: "A3", 24: "A2",
         25: "A1", 26: "A0", 27: "D0", 28: "D1", 29: "D2", 30: "GND", 31: "IRQ", 32: "PHI2"
       }}
       schPinArrangement={{
         topSide: { pins: ["VCC"], direction: "left-to-right" },
-        bottomSide: { pins: ["GND"], direction: "left-to-right" },
+        bottomSide: { pins: ["GND", "GND_FRONT"], direction: "left-to-right" },
         rightSide: {
           pins: [
             "A15", "A14", "A13", "A12", "A11", "A10", "A9", "A8", "A7", "A6", "A5", "A4", "A3", "A2", "A1", "A0",

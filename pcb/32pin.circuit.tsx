@@ -4,6 +4,7 @@ import { ATF22V10 } from "./ATF22V10";
 import { Latch74HCT373 } from "./74HCT373";
 import { YM2149 } from "./YM2149";
 import { LM358 } from "./LM358";
+import { PolarizedCap } from "./PolarizedCap";
 
 export default () => (
   <board
@@ -303,7 +304,7 @@ export default () => (
           pin2: "net.GND",
         }}
       />
-      <capacitor
+      <PolarizedCap
         name="C_BULK"
         capacitance="10uF"
         polarized
@@ -493,7 +494,7 @@ export default () => (
           pin2: "net.RESET_DELAYED",
         }}
       />
-      <capacitor
+      <PolarizedCap
         name="C_RESET"
         capacitance="10uF"
         footprint="axial_p7.62mm"
@@ -632,7 +633,7 @@ export default () => (
             OUT2: "net.AMP_UNUSED_FB",   // Pin 7: Unity-gain follower (output = GND)
           }}
         />
-        <capacitor
+        <PolarizedCap
           name="C_AUDIO_OUT"
           capacitance="10uF"
           footprint="axial_p7.62mm"

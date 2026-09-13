@@ -3,6 +3,7 @@ import { type ChipProps } from "tscircuit";
 export const LM358 = (props: ChipProps) => (
   <chip
     {...props}
+    manufacturerPartNumber="LM358"
     footprint="dip8_w300mil"
     pinLabels={{
       1: "OUT1",

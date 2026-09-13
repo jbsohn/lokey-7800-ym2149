@@ -5,6 +5,7 @@ import { type ChipProps } from "tscircuit";
 export const ROM_27Cxxx = (props: ChipProps) => (
     <chip
       {...props}
+      manufacturerPartNumber="27C010/27C020/27C040"
       footprint="dip32_w600mil"
       pinLabels={{
         1: "VPP",

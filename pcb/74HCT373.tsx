@@ -3,6 +3,7 @@ import { type ChipProps } from "tscircuit";
 export const Latch74HCT373 = (props: ChipProps) => (
   <chip
     {...props}
+    manufacturerPartNumber="74HCT373"
     footprint="dip20_w300mil"
     pinLabels={{
       1: "OE",

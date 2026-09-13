@@ -76,22 +76,42 @@ graph TD
 
 | Pin | Signal | Source / Destination |
 | :--- | :--- | :--- |
-| 1 | CLK | Unused |
-| 2 | A15 | 7800 Address Bus |
-| 3 | A14 | 7800 Address Bus |
-| 4 | A0 | 7800 Address Bus |
-| 5 | HALT | 7800 Maria Halt Signal |
-| 6 | R/W | 7800 CPU R/W Line |
-| 7 | PHI2 | 7800 CPU Clock (Cart Pin 32) |
-| 8 | A13 | 7800 Address Bus |
-| 9 | A12 | 7800 Address Bus |
-| 11 | A11 | 7800 Address Bus |
+| 1 | NC | Unused |
+| 2 | **A15** | 7800 Address Bus (Cart Pin 17 / JP1 Right) |
+| 3 | **A14** | 7800 Address Bus (Cart Pin 16 / JP2 Right) |
+| 4 | **A0** | 7800 Address Bus (Cart Pin 26 / ROM Pin 10) |
+| 5 | **HALT** | 7800 Maria Halt Signal (Cart Pin 2) |
+| 6 | **R/W** | 7800 CPU R/W Line (Cart Pin 1) |
+| 7 | **PHI2** | 7800 CPU Clock (Cart Pin 32) |
+| 8 | **A13** | 7800 Address Bus (Cart Pin 15 / ROM Pin 26) |
+| 9 | **A12** | 7800 Address Bus (Cart Pin 8 / ROM Pin 2) |
+| 10 | GND | Ground |
+| 11 | **A11** | 7800 Address Bus (Cart Pin 10 / ROM Pin 23) |
 | 15 | **YM_LE** | Latch Enable → 74HCT373 Pin 11 |
 | 16 | **PHI2OUT** | Buffered Clock → U_YM Pin 22 |
 | 17 | **BC1** | → U_YM Pin 29 |
 | 18 | **BDIR** | → U_YM Pin 27 |
-| 19 | **!ROM_CE** | → U_ROM Pin 20/22 |
+| 19 | **!ROM_CE** | → U_ROM Pin 20 (/CE) |
 | 20 | VCC | +5V |
+
+### 27C256 EPROM (28-Pin DIP, 32KB ROM)
+
+| Pin (Left Side) | Signal | Pin (Right Side) | Signal |
+| :---: | :--- | :---: | :--- |
+| **1** | **VPP** *(to JP1 Center pad)* | **28** | **VCC** (+5V) |
+| **2** | **A12** *(Cart Pin 8 / GAL Pin 9)* | **27** | **A14** *(to JP2 Center pad)* |
+| **3** | **A7** *(Cart Pin 19)* | **26** | **A13** *(Cart Pin 15 / GAL Pin 8)* |
+| **4** | **A6** *(Cart Pin 20)* | **25** | **A8** *(Cart Pin 12)* |
+| **5** | **A5** *(Cart Pin 21)* | **24** | **A9** *(Cart Pin 11)* |
+| **6** | **A4** *(Cart Pin 22)* | **23** | **A11** *(Cart Pin 10 / GAL Pin 11)* |
+| **7** | **A3** *(Cart Pin 23)* | **22** | **!OE** *(Output Enable → GND)* |
+| **8** | **A2** *(Cart Pin 24)* | **21** | **A10** *(Cart Pin 9)* |
+| **9** | **A1** *(Cart Pin 25)* | **20** | **!CE** *(Chip Enable ← GAL Pin 19)* |
+| **10** | **A0** *(Cart Pin 26 / GAL Pin 4)* | **19** | **D7** *(Cart Pin 7 / Latch Pin 18)* |
+| **11** | **D0** *(Cart Pin 27 / Latch Pin 3)* | **18** | **D6** *(Cart Pin 6 / Latch Pin 17)* |
+| **12** | **D1** *(Cart Pin 28 / Latch Pin 4)* | **17** | **D5** *(Cart Pin 5 / Latch Pin 14)* |
+| **13** | **D2** *(Cart Pin 29 / Latch Pin 7)* | **16** | **D4** *(Cart Pin 4 / Latch Pin 13)* |
+| **14** | **GND** (Ground) | **15** | **D3** *(Cart Pin 3 / Latch Pin 8)* |
 
 ### 74HCT373 Octal Latch (`U_LATCH`)
 

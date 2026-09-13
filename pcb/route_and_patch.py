@@ -43,8 +43,10 @@ os.close(_old)
 all_fps = list(board.GetFootprints())
 MIN_H = pcbnew.FromMM(0.8)
 MIN_T = pcbnew.FromMM(0.1)
+BACK_LAYERS = (pcbnew.B_SilkS, pcbnew.B_Cu, pcbnew.B_Fab, pcbnew.B_Mask, pcbnew.B_Paste)
 removed = 0
 fixed = 0
+mirrored = 0
 stubs = []
 
 for fp in all_fps:
@@ -55,19 +57,32 @@ for fp in all_fps:
     ):
         stubs.append(fp)
         removed += 1
-    else:
-        ref = fp.Reference()
-        if ref.GetTextHeight() < MIN_H:
-            ref.SetTextHeight(MIN_H)
-            ref.SetTextWidth(MIN_H)
-            ref.SetTextThickness(MIN_T)
-            fixed += 1
+        continue
+
+    ref = fp.Reference()
+    if ref.GetTextHeight() < MIN_H:
+        ref.SetTextHeight(MIN_H)
+        ref.SetTextWidth(MIN_H)
+        ref.SetTextThickness(MIN_T)
+        fixed += 1
+
+    # tscircuit places back-layer text (reference/value fields and custom
+    # silkscreentext, e.g. PolarizedCap's +/- marks) pre-positioned for the
+    # back side, but doesn't set KiCad's mirror flag, so it reads backwards
+    # when actually viewed from the bottom of the board.
+    texts = [fp.Reference(), fp.Value()]
+    texts += [item for item in fp.GraphicalItems() if hasattr(item, "SetMirrored")]
+    for t in texts:
+        if t.GetLayer() in BACK_LAYERS and not t.IsMirrored():
+            t.SetMirrored(True)
+            mirrored += 1
 
 for fp in stubs:
     board.Remove(fp)
 
 print(f"  Removed {removed} tscircuit:Unknown stub footprint(s)")
 print(f"  Fixed text size on {fixed} reference designator(s)")
+print(f"  Mirrored {mirrored} back-layer text item(s)")
 
 zone_count = 0
 for zone in board.Zones():
