@@ -139,8 +139,8 @@ $(BUILD_DIR)/%.a78: $(BUILD_DIR)/%.rom header.json
 # --- Logic Rules ---
 logic: $(BUILD_DIR)
 	@echo "Building 28-pin and 32-pin board PLD JED files from .pld sources..."
-	@galette pld/rom_28pin.pld && galette pld/rom_ym_28pin.pld
-	@galette pld/rom_32pin.pld && galette pld/rom_ym_32pin.pld
+	@galette pld/rom_ym_28pin.pld
+	@galette pld/rom_ym_32pin.pld
 	@mv pld/*.jed $(BUILD_DIR)/ 2>/dev/null || true
 
 clean:
