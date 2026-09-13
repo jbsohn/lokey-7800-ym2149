@@ -3,6 +3,7 @@
 > **Status:** Physical v0.2 PCBs (28-pin and 32-pin) have arrived from the manufacturer. The **28-pin board is validated and fully working** (32KB ROM, audio confirmed) with one required bodge wire — see [PCB v0.2 Errata & Revision Notes](docs/PCB-Revisions-v0.2.md). The 32-pin (bank-switched) board's bring-up is still pending.
 
 ![Physical v0.2 PCBs](docs/pcb-0.2.jpg)
+![Populated & validated v0.2 28-pin board](docs/pcb-0.2-populated.jpg)
 
 ## Project Overview
 
