@@ -42,6 +42,7 @@ ROMA17  = A15 + IOA3
 | **$4000–$7FFF** | **Switched 16KB Window** | Bank *N* (0..13) selected via YM2149 IOA port |
 
 ### Bank Selection Protocol
+
 1. Write YM reg 7 (Mixer): set bit 6 = `1` (IOA = output mode, preserve mixer bits 0–5).
 2. Write YM reg 14 (IOA): set bits [3:0] = bank number (16KB units).
 
@@ -108,4 +109,4 @@ ROMA17  = A15 + IOA3
 ## 4. Analog & Reset Subsystems
 
 - **Reset Delay**: 10kΩ pull-up to VCC + 10µF capacitor to GND on YM Pin 23 (`!RESET`) (~100ms reset pulse).
-- **Audio Stage**: Channels A, B, C pass through 1kΩ resistors into LM358 inverting summing node (Pin 2) with 1kΩ feedback loop, 1kΩ Class-A bias resistor, and 10µF AC-coupling capacitor to Exaudio (Cart Pin 18).
+- **Audio Stage**: Based on and adapted from Eagle's cartridge audio design on the AtariAge forums ([thread discussion](https://forums.atariage.com/topic/389754-atari-7800ym2149-clone-prototype/)).

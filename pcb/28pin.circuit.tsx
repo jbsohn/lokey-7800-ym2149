@@ -41,7 +41,6 @@ export default () => (
     <net name="SUM_NODE" />
     <net name="OPAMP_OUT" />
     <net name="CAP_PLUS" />
-    <net name="OPAMP_OUT_AC" />
     <net name="RESET_DELAYED" />
     <net name="AMP_UNUSED_FB" />
     <net name="ROM_VPP" />
@@ -218,7 +217,7 @@ export default () => (
         RW: "net.RW",
         HALT: "net.HALT",
         PHI2: "net.PHI2",
-        Exaudio: "net.OPAMP_OUT_AC",
+        Exaudio: "net.SUM_NODE",
       }}
     />
 
@@ -499,6 +498,7 @@ export default () => (
         }}
       />
 
+      {/* LM358 Audio Stage — Eagle's Active Shunt architecture (AtariAge) */}
       <group
         name="Amp"
         pcbX="0mm"
@@ -591,8 +591,8 @@ export default () => (
           schX={40}
           schY={2}
           connections={{
-            pin1: "net.CAP_PLUS",     // Positive (+) from Series Resistor
-            pin2: "net.OPAMP_OUT_AC", // Negative (-) to Exaudio / Console
+            pin1: "net.CAP_PLUS",    // Positive (+) from Series Resistor
+            pin2: "net.SUM_NODE",    // Negative (-) to SUM_NODE / Exaudio (Eagle Active Shunt)
           }}
         />
       </group>

@@ -1,6 +1,6 @@
 # Lokey 7800 YM2149
 
-> **Status:** Physical v0.2 PCBs (28-pin and 32-pin) have arrived from the manufacturer. The **28-pin board is validated and fully working** (32KB ROM, audio confirmed) with one required bodge wire — see [PCB v0.2 Errata & Revision Notes](docs/PCB-Revisions-v0.2.md). The 32-pin (bank-switched) board's bring-up is still pending.
+> **Status:** Physical v0.2 PCBs (28-pin and 32-pin) have arrived from the manufacturer. The **28-pin board is validated and playing clean audio** with two bodge wires: #1 for ROM `/OE` bus drive and #2 to connect the audio amp stage. Power-on reset behavior (`C_RESET` / `R_RESET`) is still being examined — see [PCB v0.2 Errata & Revision Notes](docs/PCB-Revisions-v0.2.md). The 32-pin (bank-switched) board bring-up is still pending.
 
 ![Physical v0.2 PCBs](docs/pcb-0.2.jpg)
 ![Populated & validated v0.2 28-pin board](docs/pcb-0.2-populated.jpg)
@@ -109,7 +109,8 @@ This project is organized across 3 dedicated repositories:
 - **Karri Kaksonen (karrika)**: For the excellent [Otaku-flash](https://github.com/karrika/Otaku-flash) project. We have integrated the **Stable Alpha** Atari 7800 cartridge footprints, symbols, and professional design rules from this MIT-licensed repository.
 - **Simon Frankau ([galette](https://github.com/simon-frankau/galette))**: For the open-source **galette** logic assembler. It provides a modern, cross-platform toolchain for compiling ATF16V8B/ATF22V10 logic, saving us from legacy Windows tools.
 - **Dan Boris (AtariHQ)**: For the indispensable [7800 Cartridge Technical Specifications](https://atarihq.com/danb/7800cart/a7800cart.shtml) and reference diagrams that made this hardware mapping possible.
-- **Eagle & Ecernosoft**: For the insightful ideas and technical tips provided on the AtariAge forums, including the Pokey800 mapping recommendation and the inspiration for the "Active Shunt" audio stage design.
+- **Eagle (AtariAge)**: For the Atari 7800 cartridge audio design work that inspired and guided this circuit, originally shared in the [Atari 7800/YM2149 clone prototype](https://forums.atariage.com/topic/389754-atari-7800ym2149-clone-prototype/) AtariAge forum thread.
+- **Ecernosoft**: For the insightful ideas and technical tips provided on the AtariAge forums, including the Pokey800 mapping recommendation.
 - **Arnaud Carré (Leonard/OXG)**: For the pioneering [StSound](https://github.com/arnaud-carre/StSound) project and research into the Atari ST sound architecture.
 - **The Atari Community**: We are grateful to the dedicated homebrew developers and fans keeping both 8-bit and 16-bit Atari platforms vibrant.
 

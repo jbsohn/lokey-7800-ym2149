@@ -144,7 +144,7 @@ The YM2149 uses a multiplexed address/data bus (`DA0–DA7`). When the CPU write
 ## 4. Hardware Reset & Audio Stage
 
 - **Reset RC Delay**: 10kΩ resistor (VCC → Pin 23) + 10µF capacitor (Pin 23 → GND). Delays YM release by ~100ms during power-up to prevent warm-start stuck tones.
-- **LM358 Audio Stage**: Channels A, B, C pass through 1kΩ isolation resistors to an active summing node (Pin 2). OUT1 (Pin 1) connects to feedback resistor (1kΩ), Class-A bias resistor (1kΩ to GND), and AC output coupling network (1kΩ series resistor + 10µF capacitor) feeding Exaudio (Cart Pin 18).
+- **Audio Stage**: Based on and adapted from Eagle's cartridge audio design on the AtariAge forums ([thread discussion](https://forums.atariage.com/topic/389754-atari-7800ym2149-clone-prototype/)).
 
 ---
 

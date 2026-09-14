@@ -79,3 +79,11 @@ From [AtariHQ](https://atarihq.com/danb/7800cart/a7800cart.shtml):
 | **18** | IOA3 | **23** | !RESET |
 | **19** | IOA2 | **22** | CLOCK |
 | **20** | IOA1 | **21** | IOA0 |
+
+---
+
+## Audio Circuit Design Credit
+
+The audio stage is based on and adapted from **Eagle's Atari 7800 cartridge audio design** on the AtariAge forums:
+
+* [Atari 7800/YM2149 clone prototype thread](https://forums.atariage.com/topic/389754-atari-7800ym2149-clone-prototype/)
