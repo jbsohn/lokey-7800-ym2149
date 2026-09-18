@@ -39,7 +39,7 @@ The **Atari 7800** acts as the **Consumer** of these assets. By bridging the har
   - **28-Pin Board**: Single YM2149, ATF16V8B PLD, solder-jumper ROM size selection (16KB / 32KB / 48KB).
   - **32-Pin Board**: Single YM2149, ATF22V10 PLD, native DIP-32 socket with software bank switching via the YM IOA port (fixed 32KB code bank at `$8000–$FFFF` + switched 16KB data window at `$4000–$7FFF`, up to 256KB).
 - **Automated PCB & PLD CI Pipeline**:
-  - **GitHub Actions**: Rebuilds PLD logic (`.jed`) and both PCBs from source on every push/PR via a containerized toolchain (KiCad 9, Freerouting v2.2.4, galette 0.3.0). Tagged releases (`v*`) automatically package and publish Gerbers (`gerbers-28pin.zip`, `gerbers-32pin.zip`) and fusemaps to GitHub Releases.
+  - **GitHub Actions**: Rebuilds PLD logic (`.jed`) and both PCBs from source on every push/PR via a containerized toolchain (KiCad 9, Freerouting v2.4.1, galette 0.3.0). Tagged releases (`v*`) automatically package and publish Gerbers (`gerbers-28pin.zip`, `gerbers-32pin.zip`) and fusemaps to GitHub Releases.
 
 ---
 
@@ -64,7 +64,7 @@ If building natively outside the container, install the following requirements:
 3. **PCB Layout & Routing**:
    - Node.js (v18+) & Bun (`npm install -g bun`) for `tscircuit` compilation in `pcb/`.
    - KiCad (v9.0+) with `kicad-cli` and `pcbnew` Python scripting environment.
-   - Java JRE (21+) with Freerouting (`FREEROUTING_JAR` set to `freerouting-2.2.4.jar`).
+   - Java JRE (21+) with Freerouting (`FREEROUTING_JAR` set to `freerouting-2.4.1.jar`).
 
 ---
 

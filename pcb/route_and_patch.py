@@ -276,19 +276,35 @@ if freerouting_proc.returncode != 0:
     print(f"Error: freerouting exited with code {freerouting_proc.returncode}.")
     sys.exit(1)
 
+# Freerouting's success wording differs by version:
+#  - <=2.2.x: a "session completed: ... (N unrouted)" line.
+#  - >=2.4.x: no such line at all; instead a "Job '<id>' finished with state:
+#    COMPLETED" line, with per-stage "... (N unrouted and M violations)"
+#    summaries logged separately along the way.
 session_match = re.search(r"session completed:.*", freerouting_output)
-if session_match is None:
+job_completed = re.search(r"finished with state:\s*COMPLETED", freerouting_output)
+if session_match is None and job_completed is None:
     print(
-        "Error: could not find a freerouting session completion summary in the"
-        " output (see above). Refusing to import/export an unverified board."
+        "Error: could not find a freerouting session/job completion summary in"
+        " the output (see above). Refusing to import/export an unverified board."
     )
     sys.exit(1)
-unrouted_match = re.search(r"\((\d+) unrouted\)", session_match.group(0))
-unrouted_count = int(unrouted_match.group(1)) if unrouted_match else 0
+
+if session_match is not None:
+    unrouted_match = re.search(r"\((\d+) unrouted\)", session_match.group(0))
+    unrouted_count = int(unrouted_match.group(1)) if unrouted_match else 0
+else:
+    # No single summary line in the new format — take the last per-stage
+    # "(N unrouted and M violations)" report, which reflects the board's
+    # final state after the optimization stage.
+    stage_summaries = re.findall(
+        r"\((\d+) unrouted and \d+ violations\)", freerouting_output
+    )
+    unrouted_count = int(stage_summaries[-1]) if stage_summaries else 0
 if unrouted_count > 0:
     print(
         f"Error: freerouting finished with {unrouted_count} unrouted connection(s)"
-        " (see 'session completed' summary above)."
+        " (see the completion summary above)."
         " Refusing to import/export a board with missing copper."
     )
     sys.exit(1)

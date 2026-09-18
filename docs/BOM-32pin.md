@@ -8,6 +8,15 @@ Passive ratings are not fixed by the design; recommended defaults:
 - **Ceramic**: 50 V ceramic (X7R/C0G)
 - **Electrolytic**: aluminium electrolytic, >= 25 V, observe polarity
 
+## Build notes (read before populating)
+
+**This board has not yet been bench-validated at all** (unlike the 28-pin board — see `docs/PCB-Revisions-v0.2.md`). The 28-pin board needed two bodge wires (ROM `/OE` → GND; `SUM_NODE` → `C_AUDIO_OUT`) to boot and play sound cleanly — both are already correct at the source level here too (`pcb/32pin.circuit.tsx`), but whether this board's actual fabricated copper matches that (the same freerouting/zone-fill quirk that bit the 28-pin board's `/OE` net could recur) is unknown until someone builds and tests one. Check continuity and audio behavior carefully on first bring-up.
+
+Two further items are optional refinements once the board is confirmed running, same as the 28-pin board — **neither has been tested on 32-pin hardware**:
+
+- **Silences BIOS-boot startup noise:** swap `R_RESET`/`C_RESET` for a CD40106 Schmitt-trigger reset-delay circuit — see "Optional: reset-delay circuit" below. Confirmed working on the 28-pin board 2026-09-17; same design here, unconfirmed.
+- **Chord-clipping headroom:** `R_YM_AUDIOA/B/C` below are 3k (raised from 1k) so a full 3-voice chord at max volume doesn't clip the LM358. Same fix as the 28-pin board; unconfirmed on either board against a real chord.
+
 ## Integrated circuits
 
 | Ref | Part | Package | Layer | Function |
@@ -28,11 +37,11 @@ Passive ratings are not fixed by the design; recommended defaults:
 | R_BANK3 | 10k | VCC / YM_IOA3 | bottom | YM IOA3 power-up pull-up (bank select) |
 | R_FB | 1k | SUM_NODE / OPAMP_OUT | bottom | LM358 inverting-stage feedback resistor |
 | R_PULL | 1k | OPAMP_OUT / GND | bottom | Class-A bias / output pulldown |
-| R_RESET | 10k | VCC / RESET_DELAYED | top | Reset RC pull-up (with C_RESET), ~100 ms YM release delay |
+| R_RESET | 10k | VCC / RESET_DELAYED | top | Reset RC pull-up (with C_RESET), ~100 ms YM release delay — **optional**: skip and use the CD40106 alternative below instead if you want BIOS-boot startup noise silenced |
 | R_SERIES | 1k | OPAMP_OUT / CAP_PLUS | bottom | Output series resistor into AC-coupling cap |
-| R_YM_AUDIOA | 1k | ANALOG_A / SUM_NODE | top | Channel A isolation resistor into LM358 summing node |
-| R_YM_AUDIOB | 1k | ANALOG_B / SUM_NODE | top | Channel B isolation resistor into LM358 summing node |
-| R_YM_AUDIOC | 1k | ANALOG_C / SUM_NODE | top | Channel C isolation resistor into LM358 summing node |
+| R_YM_AUDIOA | 3k | ANALOG_A / SUM_NODE | top | Channel A isolation resistor into LM358 summing node (raised from 1k for chord headroom, untested) |
+| R_YM_AUDIOB | 3k | ANALOG_B / SUM_NODE | top | Channel B isolation resistor into LM358 summing node (raised from 1k for chord headroom, untested) |
+| R_YM_AUDIOC | 3k | ANALOG_C / SUM_NODE | top | Channel C isolation resistor into LM358 summing node (raised from 1k for chord headroom, untested) |
 
 ## Capacitors
 
@@ -43,9 +52,19 @@ Passive ratings are not fixed by the design; recommended defaults:
 | C_BULK | 10uF | electrolytic, polarized | VCC / GND | bottom | Optional | Bulk rail reservoir / decoupling — Board runs without it; console rail + 0.1 uF caps cover it. OK to leave unpopulated. |
 | C_GAL | 0.1uF | ceramic | VCC / GND | top | Yes | U_GAL supply decoupling |
 | C_LATCH | 0.1uF | ceramic | VCC / GND | top | Yes | U_LATCH supply decoupling |
-| C_RESET | 10uF | electrolytic, polarized | RESET_DELAYED / GND | top | **Required** | Reset delay timing cap (with R_RESET) |
+| C_RESET | 10uF | electrolytic, polarized | RESET_DELAYED / GND | top | Optional | Reset delay timing cap (with R_RESET) — skip and use the CD40106 alternative below instead if you want BIOS-boot startup noise silenced |
 | C_ROM | 0.1uF | ceramic | VCC / GND | top | Yes | U_ROM supply decoupling |
 | C_YM | 0.1uF | ceramic | VCC / GND | top | Yes | U_YM supply decoupling |
+
+## Optional: CD40106 reset-delay circuit (silences BIOS-boot noise)
+
+Replaces `R_RESET`/`C_RESET` — lands on their existing pads (VCC, `RESET_DELAYED`/YM Pin 23, GND). Not yet in `pcb/32pin.circuit.tsx` source/layout; full pinout and wiring in `docs/Hardware-32pin.md` §4. Confirmed working on the 28-pin board 2026-09-17; **unconfirmed on 32-pin hardware**.
+
+| Part | Value | Package | Function |
+| --- | --- | --- | --- |
+| CD40106 | Hex Schmitt-trigger inverter | DIP-14, 0.3" | 2 of 6 gates buffer the RC below and drive YM Pin 23 directly — confirmed clean on the 28-pin board at these values |
+| R (replaces R_RESET) | 220k | Axial, 7.62 mm pitch | RC timing resistor, VCC → node |
+| C (replaces C_RESET) | 10uF, electrolytic | Axial, 7.62 mm pitch | RC timing cap, node → GND (`+` on the node side) — same value as `C_RESET`, can reuse |
 
 ## Board features — not populated parts
 
@@ -66,8 +85,12 @@ Passive ratings are not fixed by the design; recommended defaults:
 | 1 | YM2149 | DIP-40, 0.6" | U_YM |
 | 5 | 0.1uF | Axial, 7.62 mm pitch | C_AMP, C_GAL, C_LATCH, C_ROM, C_YM |
 | 3 | 10uF | Axial, 7.62 mm pitch | C_AUDIO_OUT, C_BULK, C_RESET |
-| 5 | 10k | Axial, 7.62 mm pitch | R_BANK0, R_BANK1, R_BANK2, R_BANK3, R_RESET |
-| 6 | 1k | Axial, 7.62 mm pitch | R_FB, R_PULL, R_SERIES, R_YM_AUDIOA, R_YM_AUDIOB, R_YM_AUDIOC |
+| 4 | 10k | Axial, 7.62 mm pitch | R_BANK0, R_BANK1, R_BANK2, R_BANK3 |
+| 1 | 10k | Axial, 7.62 mm pitch | R_RESET (skip if using the optional CD40106 circuit instead) |
+| 3 | 1k | Axial, 7.62 mm pitch | R_FB, R_PULL, R_SERIES |
+| 3 | 3k | Axial, 7.62 mm pitch | R_YM_AUDIOA, R_YM_AUDIOB, R_YM_AUDIOC |
+
+If adding the optional CD40106 reset-delay circuit: also need 1x CD40106, DIP-14, 0.3", and 1x 220k axial resistor. The 10uF `C_RESET` above can serve directly as its timing cap either way.
 
 ## Sockets (recommended, not on silkscreen)
 

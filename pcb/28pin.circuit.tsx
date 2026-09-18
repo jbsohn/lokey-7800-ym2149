@@ -460,7 +460,7 @@ export default () => (
       />
       <resistor
         name="R_YM_AUDIOA"
-        resistance="1k"
+        resistance="3k"
         footprint="axial_p7.62mm"
         pcbX="8.5mm"
         pcbY="10.5mm"
@@ -473,7 +473,7 @@ export default () => (
       />
       <resistor
         name="R_YM_AUDIOB"
-        resistance="1k"
+        resistance="3k"
         footprint="axial_p7.62mm"
         pcbX="19mm"
         pcbY="10.5mm"
@@ -486,7 +486,7 @@ export default () => (
       />
       <resistor
         name="R_YM_AUDIOC"
-        resistance="1k"
+        resistance="3k"
         footprint="axial_p7.62mm"
         pcbX="-2mm"
         pcbY="10.5mm"

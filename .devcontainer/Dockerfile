@@ -1,5 +1,5 @@
-# Start from KiCad 9.0 base image, which has KiCad CLI, Python 3, and related KiCad requirements
-FROM --platform=linux/amd64 ghcr.io/kicad/kicad:9.0
+# Start from KiCad 10.0 base image, which has KiCad CLI, Python 3, and related KiCad requirements
+FROM --platform=linux/amd64 ghcr.io/kicad/kicad:10.0
 
 USER root
 
@@ -29,7 +29,7 @@ RUN apt-get update -y && \
     rm /tmp/jdk25.tar.gz && \
     ln -sf /usr/local/lib/jvm/amazon-corretto-25*/bin/java /usr/local/bin/java && \
     # Install Freerouting
-    wget -q "https://github.com/freerouting/freerouting/releases/download/v2.2.4/freerouting-2.2.4.jar" -O /usr/local/lib/freerouting.jar && \
+    wget -q "https://github.com/freerouting/freerouting/releases/download/v2.4.1/freerouting-2.4.1.jar" -O /usr/local/lib/freerouting.jar && \
     # Install Cargo and Galette (for PLD compilation)
     apt-get install -y --no-install-recommends cargo && \
     cargo install galette --version 0.3.0 --root /usr/local --locked && \

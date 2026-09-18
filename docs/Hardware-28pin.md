@@ -136,15 +136,22 @@ The YM2149 uses a multiplexed address/data bus (`DA0–DA7`). When the CPU write
 | 28 | BC2 | VCC |
 | 25 | A8 | VCC |
 | 24 | !A9 | GND |
-| 23 | !RESET | RESET_DELAYED (RC network) |
+| 23 | !RESET | RESET_DELAYED (CD40106/74HC14 Schmitt-trigger delay) |
 | 30–37 | DA7–DA0 | 74HCT373 Q7–Q0 |
 
 ---
 
 ## 4. Hardware Reset & Audio Stage
 
-- **Reset RC Delay**: 10kΩ resistor (VCC → Pin 23) + 10µF capacitor (Pin 23 → GND). Delays YM release by ~100ms during power-up to prevent warm-start stuck tones.
+- **Reset Delay** (confirmed on hardware 2026-09-17 — replaces the original passive RC network, which was too slow/analog to survive BIOS RAM-test bus traffic aliased onto `$0800`, see `docs/PCB-Revisions-v0.2.md` §3): a CD40106 hex Schmitt-trigger inverter, two gates wired as a non-inverting buffer, holds Pin 23 at hard GND through BIOS boot (~1.9s) then releases it to VCC — driving Pin 23 directly, no separate pull-up needed.
+  - RC timing: R=220kΩ (VCC → node), C=10µF (node → GND, electrolytic, `+` on the node side).
+  - Wiring: Pin 1 (gate 1 in) = RC node · Pin 2 (gate 1 out) → Pin 3 (gate 2 in) · Pin 4 (gate 2 out) → YM Pin 23 · Pin 14 = VCC · Pin 7 = GND · Pins 5/9/11/13 (unused gate inputs) → GND · Pins 6/8/10/12 (unused gate outputs) left floating.
+  - Old `R_RESET`/`C_RESET` pads are no longer used by this circuit.
+  - CD40106 is the part currently in use, confirmed clean on hardware.
+  - Still on hand-wired/DIP prototype; PCB source (`pcb/28pin.circuit.tsx`) and layout haven't been updated yet — pending the planned v0.3 rework.
 - **Audio Stage**: Based on and adapted from Eagle's cartridge audio design on the AtariAge forums ([thread discussion](https://forums.atariage.com/topic/389754-atari-7800ym2149-clone-prototype/)).
+  - **Channel Summing**: `R_YM_AUDIOA/B/C` = 3kΩ (YM `ANALOG A/B/C` → `SUM_NODE`), `R_FB` = 1kΩ (`SUM_NODE` → `OPAMP_OUT`). Each channel gets ~1/3 gain into the LM358 inverting summing junction, so a full 3-voice chord at max volume lands back around a single channel's original headroom instead of stacking 3x — avoids clipping the single-supply LM358 near its rails. (Originally 1kΩ per channel/unity gain; raised to 3kΩ for headroom margin, not yet bench-confirmed against a full 3-voice chord.)
+  - `R_PULL` = 1kΩ (`OPAMP_OUT` → GND), `R_SERIES` = 1kΩ (`OPAMP_OUT` → `CAP_PLUS`) into `C_AUDIO_OUT` (10µF) AC-coupling to `Exaudio` — high-pass corner ≈ 16 Hz, well below the audio band.
 
 ---
 

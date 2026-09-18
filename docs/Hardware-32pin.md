@@ -108,5 +108,11 @@ ROMA17  = A15 + IOA3
 
 ## 4. Analog & Reset Subsystems
 
-- **Reset Delay**: 10kΩ pull-up to VCC + 10µF capacitor to GND on YM Pin 23 (`!RESET`) (~100ms reset pulse).
+- **Reset Delay**: CD40106/74HC14 Schmitt-trigger delay (same design as the 28-pin board — see `docs/Hardware-28pin.md` §4 and `docs/PCB-Revisions-v0.2.md` §3 for the full story, root cause, and rejected alternatives). Two gates of a CD40106 hex Schmitt-trigger inverter, wired as a non-inverting buffer, hold YM Pin 23 (`!RESET`) at hard GND through BIOS boot (~1.9s) then release it to VCC — driving Pin 23 directly, no separate pull-up needed.
+  - RC timing: R=220kΩ (VCC → node), C=10µF (node → GND, electrolytic, `+` on the node side).
+  - Wiring: Pin 1 (gate 1 in) = RC node · Pin 2 (gate 1 out) → Pin 3 (gate 2 in) · Pin 4 (gate 2 out) → YM Pin 23 · Pin 14 = VCC · Pin 7 = GND · Pins 5/9/11/13 (unused gate inputs) → GND · Pins 6/8/10/12 (unused gate outputs) left floating.
+  - Production: swap in a 74HC14/74HCT14 (identical 14-pin pinout, drop-in) for tighter threshold consistency across units.
+  - **Not yet validated on the 32-pin board** — confirmed only on the 28-pin board so far (2026-09-17). The 32-pin board is itself not yet bench-validated at all, so treat this as the intended design, not a proven fix here. Old passive 10kΩ/10µF RC network replaced in this doc but not yet built/tested on 32-pin hardware.
 - **Audio Stage**: Based on and adapted from Eagle's cartridge audio design on the AtariAge forums ([thread discussion](https://forums.atariage.com/topic/389754-atari-7800ym2149-clone-prototype/)).
+  - **Channel Summing**: `R_YM_AUDIOA/B/C` = 3kΩ (YM `ANALOG A/B/C` → `SUM_NODE`), `R_FB` = 1kΩ (`SUM_NODE` → `OPAMP_OUT`). Each channel gets ~1/3 gain into the LM358 inverting summing junction, so a full 3-voice chord at max volume lands back around a single channel's original headroom instead of stacking 3x — avoids clipping the single-supply LM358 near its rails. Same fix as the 28-pin board (`docs/Hardware-28pin.md` §4) — originally 1kΩ/unity gain. **Not yet bench-tested on the 32-pin board** (the 28-pin board's version of this change is also still unconfirmed against a real 3-voice chord).
+  - `R_PULL` = 1kΩ (`OPAMP_OUT` → GND), `R_SERIES` = 1kΩ (`OPAMP_OUT` → `CAP_PLUS`) into the AC-coupling cap to `Exaudio`.

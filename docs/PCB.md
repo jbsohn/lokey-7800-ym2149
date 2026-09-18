@@ -49,7 +49,7 @@ graph TD
 - **Option B (Native Requirements):**
   - **Node.js (v18+) & Bun (`npm install -g bun`)**: Required for `tscircuit` compilation.
   - **KiCad (v9.0+)**: `kicad-cli` executable and `pcbnew` Python module.
-  - **Java JRE (21+) & Freerouting**: `FREEROUTING_JAR` set to `freerouting-2.2.4.jar` (or `freerouting` binary on `PATH`).
+  - **Java JRE (21+) & Freerouting**: `FREEROUTING_JAR` set to `freerouting-2.4.1.jar` (or `freerouting` binary on `PATH`).
 
 ### Build Commands
 
