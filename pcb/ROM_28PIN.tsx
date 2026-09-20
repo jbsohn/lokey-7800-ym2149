@@ -2,7 +2,7 @@ import { type ChipProps } from "tscircuit";
 
 // Compatible with 27C128 (16KB), 27C256 (32KB), 27C512 (64KB) — see JP1/JP2
 // in docs/Hardware-28pin.md for the ROM-size jumper settings each needs.
-export const ROM_27C256 = (props: ChipProps) => (
+export const ROM_28PIN = (props: ChipProps) => (
   <chip
     {...props}
     manufacturerPartNumber="27C128/27C256/27C512"

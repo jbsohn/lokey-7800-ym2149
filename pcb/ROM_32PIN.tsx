@@ -2,7 +2,7 @@ import { type ChipProps } from "tscircuit";
 
 // Compatible with AT27C010 (128KB), AT27C020 (256KB), AT27C040 (512KB).
 // Pin 30 (A17) is NC on 27C010. Pin 31 (A18) is PGM on 27C010/27C020.
-export const ROM_27Cxxx = (props: ChipProps) => (
+export const ROM_32PIN = (props: ChipProps) => (
     <chip
       {...props}
       manufacturerPartNumber="27C010/27C020/27C040"

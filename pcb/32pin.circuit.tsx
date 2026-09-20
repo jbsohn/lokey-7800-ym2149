@@ -1,5 +1,5 @@
 import Atari7800EdgeConnector, { ATARI_7800_CONNECTOR_OUTLINE } from "./Atari7800EdgeConnector";
-import { ROM_27Cxxx } from "./ROM_27Cxxx";
+import { ROM_32PIN } from "./ROM_32PIN";
 import { ATF22V10 } from "./ATF22V10";
 import { Latch74HCT373 } from "./74HCT373";
 import { YM2149 } from "./YM2149";
@@ -13,10 +13,10 @@ export default () => (
       { x: "30mm", y: "40mm" },          // Top-right
       { x: "30mm", y: "9.5mm" },         // Right, step in at shoulder top
       { x: "20.64mm", y: "9.5mm" },      // Right shoulder recess (2.86mm from ±23.5mm, matching cart case)
-      { x: "20.64mm", y: "-0.63mm" },   // Right mid-notch top (rail grip slot)
+      { x: "20.64mm", y: "-0.63mm" },    // Right mid-notch top (rail grip slot)
       { x: "19.05mm", y: "-0.63mm" },
       { x: "19.05mm", y: "-5.08mm" },
-      { x: "20.64mm", y: "-5.08mm" },   // Right mid-notch bottom
+      { x: "20.64mm", y: "-5.08mm" },    // Right mid-notch bottom
       { x: "20.64mm", y: "-7mm" },       // Right shoulder bottom
       { x: "23.5mm", y: "-7mm" },        // Right back to connector width
       ...ATARI_7800_CONNECTOR_OUTLINE,
@@ -266,7 +266,7 @@ export default () => (
       pcbX="-1mm"
       pcbY="-20mm"
     >
-      <ROM_27Cxxx
+      <ROM_32PIN
         name="U_ROM"
         schX={1}
         schY={-8}
