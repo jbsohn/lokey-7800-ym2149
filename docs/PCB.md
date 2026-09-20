@@ -16,46 +16,52 @@ Each board is a 2-layer cartridge PCB designed to fit standard Atari 7800 cartri
 
 ## Compilation & Routing Pipeline
 
+The whole flow is TypeScript (`pcb/build-pcb.ts`, run with Bun). KiCad is only used through its stable `kicad-cli` for zone refill, DRC and Gerber export; there is no Python or `pcbnew` scripting.
+
 ```mermaid
 graph TD
-    A[React Code *.circuit.tsx] -->|npx tsci export| B[Unrouted KiCad PCB]
-    B -->|pcb/route_and_patch.py| C[Patched KiCad PCB & Rules]
-    C -->|kicad-cli / python pcbnew| D[Specctra DSN Export]
-    D -->|Boundary & Clearance Patch| E[Freerouting Session]
-    E -->|Import SES| F[Routed KiCad PCB]
-    F -->|kicad-cli DRC & Refill| G[Gerbers & Drill Files]
+    A[React Code *.circuit.tsx] -->|tsci build| B[Unrouted circuit JSON]
+    B -->|pcb/freerouting-dsn.ts| C[Specctra DSN]
+    C -->|Freerouting| D[Routed session]
+    D -->|dsn-converter| E[Routed circuit JSON]
+    E -->|tsci export| F[KiCad PCB]
+    F -->|kicadts fixups| G[Patched KiCad PCB]
+    G -->|kicad-cli drc --refill-zones| H[DRC gate]
+    H -->|kicad-cli export| I[Gerbers, drill, zip]
 ```
 
-### Pipeline Steps (`pcb/route_and_patch.py`)
+### Pipeline Steps (`pcb/build-pcb.ts`)
 
-1. **Export**: Compiles the React TSX file into an unrouted KiCad board (`.kicad_pcb`).
-2. **Patch Design Settings**:
-   - Cleans up dummy `tscircuit:Unknown` footprint stubs.
-   - Standardizes silkscreen text dimensions (height/width ≥ 0.8mm, thickness ≥ 0.1mm).
-   - Configures GND copper pours to clear isolated islands (`SetIslandRemovalMode(0)`) and sets `min_thickness` to 0.15mm.
-   - Applies custom rules (`.kicad_dru`) waiving edge clearance specifically for connector `J1` pads.
-3. **DSN Export**: Exports Specctra DSN format via `pcbnew` Python API.
-4. **DSN Patching**: Extends bottom boundary coordinate to `-140.2mm` to provide clearance for edge-connector routing.
-5. **Freerouting**: Runs Freerouting CLI to autoroute all traces.
-6. **Import & DRC**: Imports `.ses` file into `.kicad_pcb`, refills copper zones, and runs `kicad-cli` DRC.
-7. **Export Gerbers**: Writes manufacturing files to `pcb/build/gerbers/`.
+1. **Build**: `tsci build` compiles the React TSX into an unrouted circuit JSON.
+2. **DSN** (`pcb/freerouting-dsn.ts`): converts the circuit JSON to Specctra DSN with tscircuit's `dsn-converter`, then patches what the converter gets wrong:
+   - one image per part (the converter reuses one part's pins for every same-size part, so pads end up in the wrong place);
+   - unique pin ids for pads without a source port, and a one-pin net for every unused pad so it acts as an obstacle;
+   - drops the duplicate 2-pin nets that hand-placed `<trace>` elements create;
+   - real board outline, GND copper pours as planes, edge-connector clearance rules, and a 0.2mm minimum clearance.
+3. **Freerouting**: routes every net; the build fails if anything is left unrouted or the completion summary is missing.
+4. **Merge**: routes and vias are merged back into the circuit JSON (all vias are through vias).
+5. **Export & fix up**: `tsci export` writes the KiCad board; `kicadts` then raises reference-designator text to at least 0.8mm (thickness 0.1mm), sets GND zone `min_thickness` to 0.15mm and the revision (`Rev1`). The `.kicad_pro` DRC minimums come from the `<board>` itself (`minTraceWidth`, via and edge clearances), and `.kicad_dru` waives edge clearance for connector `J1` and the connector-notch nets.
+6. **Zone refill + DRC gate**: `kicad-cli pcb drc --refill-zones --save-board`. tscircuit exports the copper pour before routing, so this refill is required. The build fails on any short, clearance or track-width violation, or any unconnected item other than the known GND zone-fill fragments.
+7. **Gerbers**: writes Gerber and drill files to `pcb/build/gerbers/`, sets `Finish: ENIG` and the revision in the job file, and zips them to `pcb/build/gerbers.zip` (plus `gerbers-<board>.zip`, `index-<board>.kicad_pcb` and `index-<board>-drc.rpt`).
+
+`make pcb-check` runs steps 1-6 for both boards without writing Gerbers.
 
 ---
 
 ## Environment Setup & Build Commands
 
 ### Setup Options
-- **Option A (Docker Dev Container — Recommended):** Open `.devcontainer/` in VS Code. Pre-loaded with KiCad 9, Java 25, Freerouting, Node.js/Bun, `galette`, and `ca65`/`ld65`.
+- **Option A (Docker Dev Container — Recommended):** Open `.devcontainer/` in VS Code. Pre-loaded with KiCad, Java 25, Freerouting, Node.js/Bun, `galette`, and `ca65`/`ld65` (the PCB build needs KiCad 10 or newer).
 - **Option B (Native Requirements):**
-  - **Node.js (v18+) & Bun (`npm install -g bun`)**: Required for `tscircuit` compilation.
-  - **KiCad (v9.0+)**: `kicad-cli` executable and `pcbnew` Python module.
+  - **Bun**: runs `tscircuit` and the PCB build script (`bun install` in `pcb/`).
+  - **KiCad (v10.0+)**: the `kicad-cli` executable (zone refill needs `pcb drc --refill-zones`, added in KiCad 10).
   - **Java JRE (21+) & Freerouting**: `FREEROUTING_JAR` set to `freerouting-2.4.1.jar` (or `freerouting` binary on `PATH`).
 
 ### Build Commands
 
 ```bash
 # 1. Install dependencies
-cd pcb && npm install
+cd pcb && bun install
 
 # 2. Build 28-pin PCB Gerbers
 make pcb-28pin

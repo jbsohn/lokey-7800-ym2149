@@ -18,40 +18,46 @@ LD65_FLAGS            := --cfg-path $(SRC_DIR)
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
   KICAD_APP    ?= /Applications/KiCad/KiCad.app
-  KICAD_PYTHON ?= $(KICAD_APP)/Contents/Frameworks/Python.framework/Versions/3.9/bin/python3
+  KICAD_CLI    ?= $(KICAD_APP)/Contents/MacOS/kicad-cli
   export PATH  := $(KICAD_APP)/Contents/MacOS:$(PATH)
 else
-  KICAD_PYTHON ?= python3
+  KICAD_CLI    ?= kicad-cli
 endif
+export KICAD_CLI
 
 # --- Demos & Targets ---
 BANKED_A78S    := $(BUILD_DIR)/bank.a78
 BANKED_ROMS    := $(BUILD_DIR)/bank.rom
 
-.PHONY: all help clean distclean logic rom a78 pcb pcb-28pin pcb-32pin schematic schematic-28pin schematic-32pin previews previews-28pin previews-32pin bank
+.PHONY: all help clean distclean logic rom a78 pcb pcb-28pin pcb-32pin pcb-check schematic schematic-28pin schematic-32pin previews previews-28pin previews-32pin bank
 
 all: bank logic
 
 # --- PCB Targets ---
 pcb/node_modules: pcb/package.json
 	@echo "Installing PCB dependencies in pcb/..."
-	@cd pcb && npm install
+	@cd pcb && bun install
 	@touch pcb/node_modules
 
 pcb-28pin: pcb/node_modules
-	@echo "Exporting and autorouting 28-pin PCB from tscircuit..."
-	@cd pcb && $(KICAD_PYTHON) ./route_and_patch.py 28pin.circuit.tsx
+	@echo "Routing and exporting 28-pin PCB from tscircuit..."
+	@cd pcb && bun build-pcb.ts 28pin.circuit.tsx
 
 pcb-32pin: pcb/node_modules
-	@echo "Exporting and autorouting 32-pin PCB from tscircuit..."
-	@cd pcb && $(KICAD_PYTHON) ./route_and_patch.py 32pin.circuit.tsx
+	@echo "Routing and exporting 32-pin PCB from tscircuit..."
+	@cd pcb && bun build-pcb.ts 32pin.circuit.tsx
 
 pcb: pcb-32pin
+
+# Fast check: route both boards and run the DRC gate, without writing gerbers.
+pcb-check: pcb/node_modules
+	@cd pcb && bun build-pcb.ts 28pin.circuit.tsx --check
+	@cd pcb && bun build-pcb.ts 32pin.circuit.tsx --check
 
 schematic-28pin: pcb/node_modules
 	@echo "Exporting 28-pin schematic SVG..."
 	@mkdir -p $(BUILD_DIR)
-	@cd pcb && npx tsci export -f schematic-svg 28pin.circuit.tsx -o ../$(BUILD_DIR)/schematic-28pin.svg
+	@cd pcb && bunx tsci export -f schematic-svg 28pin.circuit.tsx -o ../$(BUILD_DIR)/schematic-28pin.svg
 	@if command -v rsvg-convert >/dev/null 2>&1; then \
 		echo "Converting schematic SVG to PNG..."; \
 		rsvg-convert -w 2048 $(BUILD_DIR)/schematic-28pin.svg -o $(BUILD_DIR)/schematic-28pin.png; \
@@ -62,7 +68,7 @@ schematic-28pin: pcb/node_modules
 schematic-32pin: pcb/node_modules
 	@echo "Exporting 32-pin schematic SVG..."
 	@mkdir -p $(BUILD_DIR)
-	@cd pcb && npx tsci export -f schematic-svg 32pin.circuit.tsx -o ../$(BUILD_DIR)/schematic-32pin.svg
+	@cd pcb && bunx tsci export -f schematic-svg 32pin.circuit.tsx -o ../$(BUILD_DIR)/schematic-32pin.svg
 	@if command -v rsvg-convert >/dev/null 2>&1; then \
 		echo "Converting schematic SVG to PNG..."; \
 		rsvg-convert -w 2048 $(BUILD_DIR)/schematic-32pin.svg -o $(BUILD_DIR)/schematic-32pin.png; \
@@ -75,28 +81,28 @@ schematic: schematic-32pin
 previews-28pin: pcb/build/index-28pin.kicad_pcb
 	@echo "Exporting 28-pin PCB SVG previews from KiCad..."
 	@mkdir -p $(BUILD_DIR)
-	@kicad-cli pcb export svg --mode-single --layers F.Cu,F.Silkscreen,F.Mask,Edge.Cuts --exclude-drawing-sheet --fit-page-to-board -o $(BUILD_DIR)/pcb_front_28pin.svg pcb/build/index-28pin.kicad_pcb
-	@kicad-cli pcb export svg --mode-single --layers B.Cu,B.Silkscreen,B.Mask,Edge.Cuts --exclude-drawing-sheet --fit-page-to-board --mirror -o $(BUILD_DIR)/pcb_back_28pin.svg pcb/build/index-28pin.kicad_pcb
+	@$(KICAD_CLI) pcb export svg --mode-single --layers F.Cu,F.Silkscreen,F.Mask,Edge.Cuts --exclude-drawing-sheet --fit-page-to-board -o $(BUILD_DIR)/pcb_front_28pin.svg pcb/build/index-28pin.kicad_pcb
+	@$(KICAD_CLI) pcb export svg --mode-single --layers B.Cu,B.Silkscreen,B.Mask,Edge.Cuts --exclude-drawing-sheet --fit-page-to-board --mirror -o $(BUILD_DIR)/pcb_back_28pin.svg pcb/build/index-28pin.kicad_pcb
 	@if command -v rsvg-convert >/dev/null 2>&1; then \
 		echo "Converting PCB SVGs to PNG..."; \
 		rsvg-convert -w 2048 $(BUILD_DIR)/pcb_front_28pin.svg -o $(BUILD_DIR)/pcb_front_28pin.png; \
 		rsvg-convert -w 2048 $(BUILD_DIR)/pcb_back_28pin.svg -o $(BUILD_DIR)/pcb_back_28pin.png; \
 	fi
 	@echo "Rendering 28-pin PCB 3D preview from KiCad..."
-	@kicad-cli pcb render --quality high --floor --rotate -45,0,45 --width 1600 --height 1200 --background opaque -o $(BUILD_DIR)/pcb_3d_28pin.png pcb/build/index-28pin.kicad_pcb
+	@$(KICAD_CLI) pcb render --quality high --floor --rotate -45,0,45 --width 1600 --height 1200 --background opaque -o $(BUILD_DIR)/pcb_3d_28pin.png pcb/build/index-28pin.kicad_pcb
 
 previews-32pin: pcb/build/index-32pin.kicad_pcb
 	@echo "Exporting 32-pin PCB SVG previews from KiCad..."
 	@mkdir -p $(BUILD_DIR)
-	@kicad-cli pcb export svg --mode-single --layers F.Cu,F.Silkscreen,F.Mask,Edge.Cuts --exclude-drawing-sheet --fit-page-to-board -o $(BUILD_DIR)/pcb_front_32pin.svg pcb/build/index-32pin.kicad_pcb
-	@kicad-cli pcb export svg --mode-single --layers B.Cu,B.Silkscreen,B.Mask,Edge.Cuts --exclude-drawing-sheet --fit-page-to-board --mirror -o $(BUILD_DIR)/pcb_back_32pin.svg pcb/build/index-32pin.kicad_pcb
+	@$(KICAD_CLI) pcb export svg --mode-single --layers F.Cu,F.Silkscreen,F.Mask,Edge.Cuts --exclude-drawing-sheet --fit-page-to-board -o $(BUILD_DIR)/pcb_front_32pin.svg pcb/build/index-32pin.kicad_pcb
+	@$(KICAD_CLI) pcb export svg --mode-single --layers B.Cu,B.Silkscreen,B.Mask,Edge.Cuts --exclude-drawing-sheet --fit-page-to-board --mirror -o $(BUILD_DIR)/pcb_back_32pin.svg pcb/build/index-32pin.kicad_pcb
 	@if command -v rsvg-convert >/dev/null 2>&1; then \
 		echo "Converting PCB SVGs to PNG..."; \
 		rsvg-convert -w 2048 $(BUILD_DIR)/pcb_front_32pin.svg -o $(BUILD_DIR)/pcb_front_32pin.png; \
 		rsvg-convert -w 2048 $(BUILD_DIR)/pcb_back_32pin.svg -o $(BUILD_DIR)/pcb_back_32pin.png; \
 	fi
 	@echo "Rendering 32-pin PCB 3D preview from KiCad..."
-	@kicad-cli pcb render --quality high --floor --rotate -45,0,45 --width 1600 --height 1200 --background opaque -o $(BUILD_DIR)/pcb_3d_32pin.png pcb/build/index-32pin.kicad_pcb
+	@$(KICAD_CLI) pcb render --quality high --floor --rotate -45,0,45 --width 1600 --height 1200 --background opaque -o $(BUILD_DIR)/pcb_3d_32pin.png pcb/build/index-32pin.kicad_pcb
 
 previews: previews-32pin
 
@@ -158,6 +164,7 @@ help:
 	@echo "  make pcb-28pin - Build 28-pin board PCB (tscircuit -> Freerouting -> Gerbers)"
 	@echo "  make pcb-32pin - Build 32-pin board PCB (tscircuit -> Freerouting -> Gerbers)"
 	@echo "  make pcb       - Alias for 'make pcb-32pin'"
+	@echo "  make pcb-check - Fast route + DRC check of both boards (no gerbers)"
 	@echo "  make previews  - Export front/back SVG previews of current PCB design"
 	@echo "  make logic     - Build PLD logic files (.jed via galette)"
 	@echo "  make clean     - Wipe build artifacts"

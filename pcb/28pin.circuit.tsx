@@ -206,7 +206,6 @@ export default () => (
       connections={{
         VCC: "net.VCC",
         GND: "net.GND",
-        GND_FRONT: "net.GND",
         "30": "net.GND",
         A0: "net.A0", A1: "net.A1", A2: "net.A2", A3: "net.A3", A4: "net.A4",
         A5: "net.A5", A6: "net.A6", A7: "net.A7", A8: "net.A8", A9: "net.A9",

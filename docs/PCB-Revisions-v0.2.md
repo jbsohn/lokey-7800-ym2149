@@ -66,7 +66,7 @@ No `+`/`−` markers on the 10 µF axial electrolytics. Assembly orientation for
 
 Back-layer reference designators and custom text (e.g. `PolarizedCap`'s `+`/`−` marks) were placed correctly but not mirrored, reading backwards from the bottom.
 
-- **Fix (done):** `pcb/route_and_patch.py` sets KiCad's mirror flag on back-layer text after import. Confirmed via `pcb/build/index-drc.rpt`: all 6 `nonmirrored_text_on_back_layer` warnings gone.
+- **Fix (done):** the v0.2 build script set KiCad's mirror flag on back-layer text after import (all 6 `nonmirrored_text_on_back_layer` warnings gone). tscircuit 0.0.2594+ exports back-layer reference designators already mirrored, so the build no longer patches this. The LM358's `{pin1}`-`{pin8}` labels on the non-fabricated `B.Fab` layer still export unmirrored (harmless).
 
 ---
 
@@ -79,12 +79,12 @@ Cart needs to slide in further. Suspect `U_ROM` needs to move away from the edge
 ## 7. Other working-tree changes
 
 - Removed `C_BULK` (optional 10 µF bulk cap) from `pcb/28pin.circuit.tsx` — board runs fine without it.
-- Cart pin 14 relabeled `GND_FRONT` (was sharing the label `"GND"` with pin 30, so never assigned to the net — same root cause as the old ERR-01). Now on `net.GND`; still needs the manual KiCad stitch check in §7 to confirm it reaches copper.
+- Cart pin 14 (`GND_FRONT`) is intentionally left unconnected. On the v0.2 hardware it never reached ground (it shared the label `"GND"` with pin 30, so it was never assigned to the net), and the board works fully with pin 14 floating and no bodge wire, so it is not needed. Ground comes through cart pin 30.
 - `R_YM_AUDIOA/B/C` raised from 1kΩ (unity gain) to 3kΩ in `pcb/28pin.circuit.tsx`, keeping `R_FB` at 1kΩ. Original values were picked ad hoc just to get the channels buffered; at unity gain a full 3-voice chord at max volume could sum to ~3x a single channel's swing into the single-supply LM358, risking clipping near its rails. 3kΩ gives each channel ~1/3 gain so a full chord lands back near a single channel's original headroom. **Not yet bench-tested** — needs a full 3-note max-volume chord check on real hardware before committing.
 
 ## 8. v0.3 fix list
 
-- [ ] **ERR-OE:** manually verify + stitch ROM `/OE` (and cart pin 14 / `GND_FRONT`) onto the GND zone in KiCad after gerber generation — see §1.
+- [ ] **ERR-OE:** manually verify + stitch ROM `/OE` onto the GND zone in KiCad after gerber generation — see §1.
 - [x] **ERR-AUDIO-DISTORT:** bridge `SUM_NODE` directly to `C_AUDIO_OUT` pin 2 (`Exaudio`) in PCB routing, restoring Eagle's Active Shunt — resolved via Bodge #2, see §2.
 - [x] **ERR-AUDIO-POP:** CD40106 Schmitt-trigger reset delay confirmed on hardware — clean boot into music, no startup static. Still need: DIP-14 layout placement in the v0.3 rework, and swap-and-reverify with 74HC14 for production — see §3.
 - [ ] **ERR-02:** `<PolarizedCap>` with `+`/`−` silkscreen (already in working tree).

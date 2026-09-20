@@ -1,7 +1,7 @@
 name: PCB Build
 
 # Gold-standard hardware build: every push/PR rebuilds the PLD logic and both
-# PCBs from source in a pinned toolchain (KiCad 9, freerouting v2.2.4,
+# PCBs from source in a pinned toolchain (KiCad 10, freerouting v2.4.1,
 # galette 0.3.0). Pushing a v* tag additionally publishes the artifacts as a
 # GitHub Release — those release files are the canonical gerbers/JEDs to send
 # to fab and to program PLDs from.
@@ -20,7 +20,7 @@ jobs:
     permissions:
       contents: write
     container:
-      image: ghcr.io/kicad/kicad:9.0
+      image: ghcr.io/kicad/kicad:10.0
       options: --user root
 
     steps:
@@ -34,7 +34,7 @@ jobs:
           apt-get install -y nodejs
           npm install -g bun
 
-          # Install JDK 25 to run Freerouting v2.2.4+
+          # Install JDK 25 to run Freerouting v2.4.1
           wget -q https://corretto.aws/downloads/latest/amazon-corretto-25-x64-linux-jdk.tar.gz -O /tmp/jdk25.tar.gz
           mkdir -p /usr/local/lib/jvm
           tar -xzf /tmp/jdk25.tar.gz -C /usr/local/lib/jvm
@@ -42,7 +42,7 @@ jobs:
 
       - name: Install Freerouting
         run: |
-          VERSION="v2.2.4"
+          VERSION="v2.4.1"
           wget -q "https://github.com/freerouting/freerouting/releases/download/${VERSION}/freerouting-${VERSION#v}.jar" \
             -O /usr/local/lib/freerouting.jar
           echo "FREEROUTING_JAR=/usr/local/lib/freerouting.jar" >> "$GITHUB_ENV"
@@ -53,7 +53,7 @@ jobs:
           cargo install galette --version 0.3.0 --root /usr/local --locked
 
       - name: Install Node dependencies
-        run: cd pcb && npm install
+        run: cd pcb && bun install --frozen-lockfile
 
       - name: Build PLD logic (JEDEC)
         run: make logic

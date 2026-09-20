@@ -49,7 +49,7 @@ The **Atari 7800** acts as the **Consumer** of these assets. By bridging the har
 
 A preconfigured Docker Dev Container is provided in `.devcontainer/`. Opening the project in VS Code / GitHub Codespaces pre-loads a gold-standard environment matching CI:
 
-- KiCad 9.0 (`kicad-cli` & `pcbnew`)
+- KiCad 10+ (`kicad-cli`)
 - Java 25 & Freerouting CLI
 - Node.js 20 & Bun
 - `galette` 0.3.0 (PLD logic compiler)
@@ -63,7 +63,7 @@ If building natively outside the container, install the following requirements:
 2. **PLD Logic Assembler**: `galette` 0.3.0 (`cargo install galette --version 0.3.0`).
 3. **PCB Layout & Routing**:
    - Node.js (v18+) & Bun (`npm install -g bun`) for `tscircuit` compilation in `pcb/`.
-   - KiCad (v9.0+) with `kicad-cli` and `pcbnew` Python scripting environment.
+   - KiCad (v10.0+) with `kicad-cli` (no Python scripting needed).
    - Java JRE (21+) with Freerouting (`FREEROUTING_JAR` set to `freerouting-2.4.1.jar`).
 
 ---

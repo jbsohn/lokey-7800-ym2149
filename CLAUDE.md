@@ -43,5 +43,5 @@
 - `examples/`: ca65 6502 assembly source files (`.s`), header equates (`.inc`), linker scripts (`.cfg`), and A78 header configs (`.json`).
 - `docs/`: Hardware specs, PCB pipeline docs, and emulation references.
 - `pld/`: Programmable logic (ATF16V8B / ATF22V10 PLD) sources (`.pld`).
-- `pcb/`: tscircuit PCB design files (`28pin.circuit.tsx`, `32pin.circuit.tsx`, `route_and_patch.py`).
+- `pcb/`: tscircuit PCB design files (`28pin.circuit.tsx`, `32pin.circuit.tsx`) and the TypeScript build (`build-pcb.ts`, `freerouting-dsn.ts`).
 - `ym-samples/`: Original Atari ST music sources.
