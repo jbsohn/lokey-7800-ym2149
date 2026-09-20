@@ -84,7 +84,7 @@ Cart needs to slide in further. Suspect `U_ROM` needs to move away from the edge
 
 ## 8. v0.3 fix list
 
-- [ ] **ERR-OE:** manually verify + stitch ROM `/OE` onto the GND zone in KiCad after gerber generation — see §1.
+- [ ] **ERR-OE:** confirm on the v0.3 board that ROM `/OE` (pin 22) has continuity to GND. The build's DRC gate now fails on any pad that is not connected to its net, including a GND pad the zone does not reach (it only tolerates GND zone-to-zone fragments), so a repeat of this fault should stop the build before Gerbers are written. Do not hand-stitch it in KiCad; the board is regenerated on every build — see §1.
 - [x] **ERR-AUDIO-DISTORT:** bridge `SUM_NODE` directly to `C_AUDIO_OUT` pin 2 (`Exaudio`) in PCB routing, restoring Eagle's Active Shunt — resolved via Bodge #2, see §2.
 - [x] **ERR-AUDIO-POP:** CD40106 Schmitt-trigger reset delay confirmed on hardware — clean boot into music, no startup static. Still need: DIP-14 layout placement in the v0.3 rework, and swap-and-reverify with 74HC14 for production — see §3.
 - [ ] **ERR-02:** `<PolarizedCap>` with `+`/`−` silkscreen (already in working tree).

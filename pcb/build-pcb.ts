@@ -109,7 +109,8 @@ function route(): { path: string; rules: BoardRules } {
   const dsnPath = join(TS_DIR, `${board}.dsn`);
   const sesPath = join(TS_DIR, `${board}.ses`);
   writeFileSync(dsnPath, dsn);
-  const extra = (process.env.FREEROUTING_ARGS ?? "--router.optimizer.enabled=false").split(" ").filter(Boolean);
+  // `-mt 0` is Freerouting's documented way to disable the (slow, no-gain here) route optimizer.
+  const extra = (process.env.FREEROUTING_ARGS ?? "-mt 0").split(" ").filter(Boolean);
   const freerouting = freeroutingCommand();
   const fr = run(freerouting.cmd, [...freerouting.args, "-de", dsnPath, "-do", sesPath, "-mp", "0", "--gui.enabled=false", ...extra]);
   if (fr.status !== 0 || !existsSync(sesPath)) throw new Error(`freerouting failed:\n${fr.stderr}`);

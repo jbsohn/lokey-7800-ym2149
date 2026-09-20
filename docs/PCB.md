@@ -38,6 +38,7 @@ graph TD
    - unique pin ids for pads without a source port, and a one-pin net for every unused pad so it acts as an obstacle;
    - drops the duplicate 2-pin nets that hand-placed `<trace>` elements create;
    - real board outline, GND copper pours as planes, edge-connector clearance rules, and a 0.2mm minimum clearance.
+   - **Self-check** (`verifyDsn`): before Freerouting runs, the build verifies every assumption these patches rely on (one image per part, unique pin ids, every pad present at the right place, every pin in exactly one net, boundary, planes and clearance rules applied). If a `dsn-converter` upgrade changes its output, the build fails with a specific message instead of misplacing pads.
 3. **Freerouting**: routes every net; the build fails if anything is left unrouted or the completion summary is missing.
 4. **Merge**: routes and vias are merged back into the circuit JSON (all vias are through vias).
 5. **Export & fix up**: `tsci export` writes the KiCad board; `kicadts` then raises reference-designator text to at least 0.8mm (thickness 0.1mm), sets GND zone `min_thickness` to 0.15mm and the revision (`Rev1`). The `.kicad_pro` DRC minimums come from the `<board>` itself (`minTraceWidth`, via and edge clearances), and `.kicad_dru` waives edge clearance for connector `J1` and the connector-notch nets.
