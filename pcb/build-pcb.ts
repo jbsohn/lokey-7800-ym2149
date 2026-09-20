@@ -1,6 +1,6 @@
 // TypeScript build for the tscircuit boards (replaces route_and_patch.py):
 //   tsci build -> Specctra DSN -> freerouting -> routed circuit JSON -> KiCad board
-//   -> kicadts fixups -> kicad-cli (zone refill + DRC gate, gerbers, drill) -> zip
+//   -> kicadts fixups -> kicad-cli (zone refill + JSON DRC, gerbers, drill) -> zip
 //
 //   FREEROUTING_JAR=~/.local/lib/freerouting-2.4.1.jar bun build-pcb.ts 28pin.circuit.tsx [--check]
 //
@@ -42,7 +42,7 @@ const KICAD_DIR = join(BUILD, "KiCad");
 const PCB = join(KICAD_DIR, "index.kicad_pcb");
 const PRO = join(KICAD_DIR, "index.kicad_pro");
 const DRU = join(KICAD_DIR, "index.kicad_dru");
-const DRC_RPT = join(BUILD, "index-drc.rpt");
+const DRC_JSON = join(BUILD, "index-drc.json");
 const GERBER_DIR = join(BUILD, "gerbers");
 
 const MIN_TEXT_MM = 0.8;
@@ -93,7 +93,7 @@ function kicad(args: string[]) {
 // Minimums the design itself declares on the <board>; the DRC gate holds the routed board to them.
 type BoardRules = { minTrace?: number; viaPad?: number; viaHole?: number; edge?: number };
 
-// --- 1. Route -------------------------------------------------------------------
+// --- Route -------------------------------------------------------------------
 function route(): { path: string; rules: BoardRules } {
   console.log(`Building unrouted circuit JSON for ${entry}...`);
   const distDir = join("dist", board);
@@ -109,15 +109,18 @@ function route(): { path: string; rules: BoardRules } {
   const dsnPath = join(TS_DIR, `${board}.dsn`);
   const sesPath = join(TS_DIR, `${board}.ses`);
   writeFileSync(dsnPath, dsn);
-  // `-mt 0` is Freerouting's documented way to disable the (slow, no-gain here) route optimizer.
   const extra = (process.env.FREEROUTING_ARGS ?? "-mt 0").split(" ").filter(Boolean);
   const freerouting = freeroutingCommand();
-  const fr = run(freerouting.cmd, [...freerouting.args, "-de", dsnPath, "-do", sesPath, "-mp", "0", "--gui.enabled=false", ...extra]);
+  const fr = run(freerouting.cmd, [...freerouting.args, "-de", dsnPath, "-do", sesPath, "--gui.enabled=false", ...extra]);
   if (fr.status !== 0 || !existsSync(sesPath)) throw new Error(`freerouting failed:\n${fr.stderr}`);
-  // >=2.4 logs "(N unrouted and M violations)" per stage; older versions log "session completed: ... (N unrouted)".
-  const summary = [...fr.stdout.matchAll(/\((\d+) unrouted and \d+ violations\)/g)].at(-1)?.[1] ?? fr.stdout.match(/session completed:.*?\((\d+) unrouted\)/)?.[1];
-  if (summary === undefined) throw new Error("could not find a freerouting completion summary; refusing to use an unverified route");
-  if (Number(summary) > 0) throw new Error(`freerouting left ${summary} unrouted connection(s)`);
+
+  const frDrcPath = join(TS_DIR, `${board}-drc.json`);
+  const frDrcRun = run(freerouting.cmd, [...freerouting.args, "-de", `${dsnPath}+${sesPath}`, "-drc", frDrcPath, "--gui.enabled=false"]);
+  if (frDrcRun.status !== 0 || !existsSync(frDrcPath)) throw new Error(`freerouting -drc failed:\n${frDrcRun.stderr || frDrcRun.stdout}`);
+  const frDrc = JSON.parse(readFileSync(frDrcPath, "utf8"));
+  const unconnected = frDrc.unconnected_items ?? frDrc.unconnectedItems;
+  if (!Array.isArray(unconnected)) throw new Error(`freerouting -drc JSON has no unconnected_items array: ${frDrcPath}`);
+  if (unconnected.length > 0) throw new Error(`freerouting left ${unconnected.length} unconnected item(s) (see ${frDrcPath})`);
 
   const session = parseDsnToDsnJson(readFileSync(sesPath, "utf8")) as DsnSession;
   const routed = convertDsnSessionToCircuitJson(parseDsnToDsnJson(dsn) as DsnPcb, session, circuitJson);
@@ -136,7 +139,7 @@ function route(): { path: string; rules: BoardRules } {
   return { path: outPath, rules: { minTrace: b.min_trace_width, viaPad: b.min_via_pad_diameter, viaHole: b.min_via_hole_diameter, edge: b.min_board_edge_clearance } };
 }
 
-// --- 2. Export + fix up the KiCad board ----------------------------------------------
+// --- Export + fix up the KiCad board ----------------------------------------------
 function exportBoard(routedJson: string) {
   console.log("Exporting KiCad board from tscircuit...");
   mkdirSync(KICAD_DIR, { recursive: true });
@@ -217,39 +220,61 @@ function writeProjectFiles(r: BoardRules) {
   );
 }
 
-// --- 3. Refill zones + DRC gate ----------------------------------------------------------
-function parseDrc(report: string) {
-  const entries: { category: string; items: string[] }[] = [];
-  for (const line of report.split("\n")) {
-    const head = line.match(/^\[(\w+)\]:/);
-    if (head) entries.push({ category: head[1], items: [] });
-    else if (line.trim().startsWith("@(") && entries.length) entries.at(-1)!.items.push(line.trim());
-  }
-  return entries;
+// --- Refill zones + DRC gate ----------------------------------------------------------
+// KiCad 10 documents `pcb drc --format json` against https://schemas.kicad.org/drc.v1.json.
+type DrcItem = { description?: string };
+type DrcViolation = { type?: string; description?: string; items?: DrcItem[] };
+const UNTYPED = "untyped";
+
+function isGndZoneFill(entry: DrcViolation): boolean {
+  const items = entry.items;
+  if (!items?.length) return false;
+  return items.every((i) => (i.description ?? "").includes("Zone [GND]"));
 }
 
 function drcGate() {
   console.log("Refilling zones and running DRC...");
-  kicad(["pcb", "drc", "--refill-zones", "--save-board", "-o", DRC_RPT, PCB]);
-  const entries = parseDrc(readFileSync(DRC_RPT, "utf8"));
+  kicad(["pcb", "drc", "--format", "json", "--severity-error", "--severity-warning", "--refill-zones", "--save-board", "-o", DRC_JSON, PCB]);
+  const report = JSON.parse(readFileSync(DRC_JSON, "utf8"));
+  if (!Array.isArray(report.violations) || !Array.isArray(report.unconnected_items)) {
+    throw new Error(`KiCad DRC JSON is missing required arrays (https://schemas.kicad.org/drc.v1.json): ${DRC_JSON}`);
+  }
+
+  // The gate is only meaningful if the report covers every severity we gate on and no gated check was
+  // switched off (e.g. by `rule_severities` in the .kicad_pro).
+  const severities: unknown = report.included_severities;
+  for (const s of ["error", "warning"]) {
+    if (!Array.isArray(severities) || !severities.includes(s)) throw new Error(`KiCad DRC JSON did not include '${s}' severity, so the gate would be blind to it: ${DRC_JSON}`);
+  }
+  const ignored = ((report.ignored_checks ?? []) as { key?: string }[]).map((c) => c.key ?? "");
+  const blinded = ignored.filter((k) => HARD_DRC.has(k) || k === "unconnected_items");
+  if (blinded.length) throw new Error(`KiCad DRC ignores checks the gate depends on (${blinded.join(", ")}); fix the rule severities in ${PRO}`);
+
+  const violations = report.violations as DrcViolation[];
+  const unconnected = report.unconnected_items as DrcViolation[];
   const counts = new Map<string, number>();
-  for (const e of entries) counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
+  // A violation without a type can't be classified as cosmetic, so it is counted under UNTYPED and fails the gate.
+  for (const v of violations) counts.set(v.type ?? UNTYPED, (counts.get(v.type ?? UNTYPED) ?? 0) + 1);
 
   const failures: string[] = [];
-  const realUnconnected = entries.filter((e) => e.category === "unconnected_items" && !e.items.every((i) => i.includes("Zone [GND]")));
+  const realUnconnected = unconnected.filter((e) => !isGndZoneFill(e));
   if (realUnconnected.length) {
     failures.push(`${realUnconnected.length} unconnected item(s) that are not the GND zone-fill artifact:`);
-    for (const e of realUnconnected.slice(0, 6)) failures.push(...e.items.map((i) => `    ${i}`));
+    for (const e of realUnconnected.slice(0, 6)) {
+      const items = e.items ?? [];
+      if (!items.length) failures.push(`    ${e.description ?? e.type ?? "unconnected_items"} (no items in report; failing closed)`);
+      else failures.push(...items.map((i) => `    ${i.description ?? ""}`));
+    }
   }
-  for (const [category, n] of counts) if (HARD_DRC.has(category)) failures.push(`${n} ${category} violation(s)`);
+  for (const [category, n] of counts) if (category === UNTYPED || HARD_DRC.has(category)) failures.push(`${n} ${category} violation(s)`);
 
-  const noise = [...counts].filter(([c]) => !HARD_DRC.has(c) && c !== "unconnected_items").map(([c, n]) => `${c}: ${n}`);
+  const noise = [...counts].filter(([c]) => c !== UNTYPED && !HARD_DRC.has(c)).map(([c, n]) => `${c}: ${n}`);
   console.log(`  Other DRC notes (cosmetic): ${noise.join(", ") || "none"}`);
-  if (failures.length) throw new Error(`DRC failed (see ${DRC_RPT}):\n  ${failures.join("\n  ")}`);
+  if (failures.length) throw new Error(`DRC failed (see ${DRC_JSON}):\n  ${failures.join("\n  ")}`);
   console.log("  DRC gate passed (no shorts, no real unconnected items, no clearance violations)");
 }
 
-// --- 4. Fabrication outputs ----------------------------------------------------------------
+// --- Fabrication outputs ----------------------------------------------------------------
 async function fabricate() {
   console.log("Exporting Gerbers and drill files...");
   rmSync(GERBER_DIR, { recursive: true, force: true });
@@ -274,7 +299,7 @@ async function fabricate() {
 
   // Board-specific copies so downstream targets (previews, CI artifacts) never grab another board's outputs.
   copyFileSync(PCB, join(BUILD, `index-${board}.kicad_pcb`));
-  copyFileSync(DRC_RPT, join(BUILD, `index-${board}-drc.rpt`));
+  copyFileSync(DRC_JSON, join(BUILD, `index-${board}-drc.json`));
   copyFileSync(zipPath, join(BUILD, `gerbers-${board}.zip`));
 }
 

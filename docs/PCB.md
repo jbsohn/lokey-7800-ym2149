@@ -26,7 +26,7 @@ graph TD
     D -->|dsn-converter| E[Routed circuit JSON]
     E -->|tsci export| F[KiCad PCB]
     F -->|kicadts fixups| G[Patched KiCad PCB]
-    G -->|kicad-cli drc --refill-zones| H[DRC gate]
+    G -->|kicad-cli drc --format json --refill-zones| H[DRC gate]
     H -->|kicad-cli export| I[Gerbers, drill, zip]
 ```
 
@@ -39,11 +39,11 @@ graph TD
    - drops the duplicate 2-pin nets that hand-placed `<trace>` elements create;
    - real board outline, GND copper pours as planes, edge-connector clearance rules, and a 0.2mm minimum clearance.
    - **Self-check** (`verifyDsn`): before Freerouting runs, the build verifies every assumption these patches rely on (one image per part, unique pin ids, every pad present at the right place, every pin in exactly one net, boundary, planes and clearance rules applied). If a `dsn-converter` upgrade changes its output, the build fails with a specific message instead of misplacing pads.
-3. **Freerouting**: routes every net; the build fails if anything is left unrouted or the completion summary is missing.
+3. **Freerouting**: routes every net with the documented CLI (`-de`/`-do`/`--gui.enabled=false`, `-mt 0` to skip the optimizer). After the session is written, a second documented `-drc` invocation checks `unconnected_items`; the build fails if any remain.
 4. **Merge**: routes and vias are merged back into the circuit JSON (all vias are through vias).
 5. **Export & fix up**: `tsci export` writes the KiCad board; `kicadts` then raises reference-designator text to at least 0.8mm (thickness 0.1mm), sets GND zone `min_thickness` to 0.15mm and the revision (`Rev1`). The `.kicad_pro` DRC minimums come from the `<board>` itself (`minTraceWidth`, via and edge clearances), and `.kicad_dru` waives edge clearance for connector `J1` and the connector-notch nets.
-6. **Zone refill + DRC gate**: `kicad-cli pcb drc --refill-zones --save-board`. tscircuit exports the copper pour before routing, so this refill is required. The build fails on any short, clearance or track-width violation, or any unconnected item other than the known GND zone-fill fragments.
-7. **Gerbers**: writes Gerber and drill files to `pcb/build/gerbers/`, sets `Finish: ENIG` and the revision in the job file, and zips them to `pcb/build/gerbers.zip` (plus `gerbers-<board>.zip`, `index-<board>.kicad_pcb` and `index-<board>-drc.rpt`).
+6. **Zone refill + DRC gate**: `kicad-cli pcb drc --format json --severity-error --severity-warning --refill-zones --save-board`. tscircuit exports the copper pour before routing, so this refill is required. The gate reads the documented JSON schema (`https://schemas.kicad.org/drc.v1.json`) and fails on any short, clearance or track-width violation, or any unconnected item other than the known GND zone-fill fragments. It also fails if the report omits the error or warning severity, if the `.kicad_pro` ignores a check the gate depends on, or if a violation has no `type` (it cannot be classed as cosmetic).
+7. **Gerbers**: writes Gerber and drill files to `pcb/build/gerbers/`, sets `Finish: ENIG` and the revision in the job file, and zips them to `pcb/build/gerbers.zip` (plus `gerbers-<board>.zip`, `index-<board>.kicad_pcb` and `index-<board>-drc.json`).
 
 `make pcb-check` runs steps 1-6 for both boards without writing Gerbers.
 
