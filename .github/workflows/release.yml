@@ -40,12 +40,10 @@ jobs:
           tar -xzf /tmp/jdk25.tar.gz -C /usr/local/lib/jvm
           ln -sf /usr/local/lib/jvm/amazon-corretto-25*/bin/java /usr/local/bin/java
 
+      # The version and SHA-256 are pinned in the Makefile; `make pcb-*` picks up the
+      # downloaded jar from pcb/.tools/ without FREEROUTING_JAR being set.
       - name: Install Freerouting
-        run: |
-          VERSION="v2.4.1"
-          wget -q "https://github.com/freerouting/freerouting/releases/download/${VERSION}/freerouting-${VERSION#v}.jar" \
-            -O /usr/local/lib/freerouting.jar
-          echo "FREEROUTING_JAR=/usr/local/lib/freerouting.jar" >> "$GITHUB_ENV"
+        run: make freerouting
 
       - name: Install galette
         run: |

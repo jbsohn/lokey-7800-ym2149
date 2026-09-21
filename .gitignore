@@ -18,4 +18,5 @@ bin/
 .tscircuit
 pcb/build/
 pcb/node_modules/
+pcb/.tools/
 pcb/dist/

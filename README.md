@@ -64,7 +64,7 @@ If building natively outside the container, install the following requirements:
 3. **PCB Layout & Routing**:
    - Node.js (v18+) & Bun (`npm install -g bun`) for `tscircuit` compilation in `pcb/`.
    - KiCad (v10.0+) with `kicad-cli` (no Python scripting needed).
-   - Java JRE (21+) with Freerouting (`FREEROUTING_JAR` set to `freerouting-2.4.1.jar`).
+   - Java JRE (21+). `make freerouting` downloads the pinned Freerouting 2.4.1 jar into `pcb/.tools/` (SHA-256 verified), and the `pcb*` targets fetch it automatically. Set `FREEROUTING_JAR` to use your own copy.
 
 ---
 

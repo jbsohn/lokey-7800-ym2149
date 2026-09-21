@@ -56,7 +56,7 @@ graph TD
 - **Option B (Native Requirements):**
   - **Bun**: runs `tscircuit` and the PCB build script (`bun install` in `pcb/`).
   - **KiCad (v10.0+)**: the `kicad-cli` executable (zone refill needs `pcb drc --refill-zones`, added in KiCad 10).
-  - **Java JRE (21+) & Freerouting**: `FREEROUTING_JAR` set to `freerouting-2.4.1.jar` (or `freerouting` binary on `PATH`).
+  - **Java JRE (21+) & Freerouting**: `make freerouting` downloads the pinned 2.4.1 jar into `pcb/.tools/` and verifies its SHA-256; the `pcb*` targets do this automatically. To use your own copy, set `FREEROUTING_JAR` to a jar (or `FREEROUTING_BIN` to a `freerouting` executable).
 
 ### Build Commands
 

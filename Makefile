@@ -25,11 +25,26 @@ else
 endif
 export KICAD_CLI
 
+# --- Freerouting Setup (pinned, checksum-verified download) ---
+# `make freerouting` fetches the jar into pcb/.tools/. FREEROUTING_JAR from the environment (CI,
+# devcontainer) or FREEROUTING_BIN (an executable on PATH) take precedence over the local copy.
+FREEROUTING_VERSION ?= 2.4.1
+FREEROUTING_SHA256  ?= 251101c3eeac22d7e7dfcf6796603279e5d1000283eb82d8f093780f7afc6aa9
+FREEROUTING_URL     ?= https://github.com/freerouting/freerouting/releases/download/v$(FREEROUTING_VERSION)/freerouting-$(FREEROUTING_VERSION).jar
+FREEROUTING_LOCAL   := pcb/.tools/freerouting-$(FREEROUTING_VERSION).jar
+SHA256              := $(shell command -v sha256sum >/dev/null 2>&1 && echo sha256sum || echo shasum -a 256)
+ifndef FREEROUTING_BIN
+  FREEROUTING_JAR ?= $(abspath $(FREEROUTING_LOCAL))
+endif
+export FREEROUTING_JAR
+# Only depend on the download when the build actually uses the local copy.
+FREEROUTING_DEP     := $(if $(filter $(abspath $(FREEROUTING_LOCAL)),$(FREEROUTING_JAR)),$(FREEROUTING_LOCAL))
+
 # --- Demos & Targets ---
 BANKED_A78S    := $(BUILD_DIR)/bank.a78
 BANKED_ROMS    := $(BUILD_DIR)/bank.rom
 
-.PHONY: all help clean distclean logic rom a78 pcb pcb-28pin pcb-32pin pcb-check schematic schematic-28pin schematic-32pin previews previews-28pin previews-32pin bank
+.PHONY: all help clean distclean logic rom a78 freerouting pcb pcb-28pin pcb-32pin pcb-check schematic schematic-28pin schematic-32pin previews previews-28pin previews-32pin bank
 
 all: bank logic
 
@@ -39,18 +54,28 @@ pcb/node_modules: pcb/package.json
 	@cd pcb && bun install
 	@touch pcb/node_modules
 
-pcb-28pin: pcb/node_modules
+freerouting: $(FREEROUTING_LOCAL)
+
+$(FREEROUTING_LOCAL):
+	@echo "Downloading Freerouting v$(FREEROUTING_VERSION)..."
+	@mkdir -p $(dir $@)
+	@curl -fsSL "$(FREEROUTING_URL)" -o "$@.part" || { rm -f "$@.part"; echo "Download failed: $(FREEROUTING_URL)"; exit 1; }
+	@echo "$(FREEROUTING_SHA256)  $@.part" | $(SHA256) -c - >/dev/null 2>&1 || { rm -f "$@.part"; echo "SHA-256 mismatch for Freerouting v$(FREEROUTING_VERSION); refusing to use it"; exit 1; }
+	@mv "$@.part" "$@"
+	@echo "  $@ (SHA-256 verified)"
+
+pcb-28pin: pcb/node_modules $(FREEROUTING_DEP)
 	@echo "Routing and exporting 28-pin PCB from tscircuit..."
 	@cd pcb && bun build-pcb.ts 28pin.circuit.tsx
 
-pcb-32pin: pcb/node_modules
+pcb-32pin: pcb/node_modules $(FREEROUTING_DEP)
 	@echo "Routing and exporting 32-pin PCB from tscircuit..."
 	@cd pcb && bun build-pcb.ts 32pin.circuit.tsx
 
 pcb: pcb-32pin
 
 # Fast check: route both boards and run the DRC gate, without writing gerbers.
-pcb-check: pcb/node_modules
+pcb-check: pcb/node_modules $(FREEROUTING_DEP)
 	@cd pcb && bun build-pcb.ts 28pin.circuit.tsx --check
 	@cd pcb && bun build-pcb.ts 32pin.circuit.tsx --check
 
@@ -154,13 +179,14 @@ clean:
 	@rm -rf pcb/build/
 
 distclean: clean
-	@rm -rf pcb/node_modules
+	@rm -rf pcb/node_modules pcb/.tools
 
 help:
 	@echo "Atari 7800 YM2149 Cartridge Build System (ca65 / ld65)"
 	@echo ""
 	@echo "Targets:"
 	@echo "  make bank      - Build 32-pin bank-select chromatic scale demo (.a78 + .rom)"
+	@echo "  make freerouting - Download the pinned Freerouting jar into pcb/.tools (SHA-256 verified)"
 	@echo "  make pcb-28pin - Build 28-pin board PCB (tscircuit -> Freerouting -> Gerbers)"
 	@echo "  make pcb-32pin - Build 32-pin board PCB (tscircuit -> Freerouting -> Gerbers)"
 	@echo "  make pcb       - Alias for 'make pcb-32pin'"
@@ -168,4 +194,4 @@ help:
 	@echo "  make previews  - Export front/back SVG previews of current PCB design"
 	@echo "  make logic     - Build PLD logic files (.jed via galette)"
 	@echo "  make clean     - Wipe build artifacts"
-	@echo "  make distclean - Wipe build artifacts AND pcb/node_modules"
+	@echo "  make distclean - Wipe build artifacts AND pcb/node_modules and pcb/.tools"
