@@ -57,7 +57,7 @@ const Atari7800EdgeConnector = (props: ChipProps) => {
         }
       }}
     >
-      <footprint>
+      <footprint insertionDirection="from_bottom">
         {frontPads.map(pad => (
           <smtpad
             key={`front-${pad.num}`}

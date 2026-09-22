@@ -47,13 +47,16 @@ export default () => (
     <net name="ROM_ADDR14" />
 
     {/* Ground Plane & Basic Net Configuration */}
+    {/* boardEdgeMargin 0.21mm: tscircuit's default 0.20mm pour lands at 0.199mm and trips its own edge-clearance check */}
     <copperpour
       layer="bottom"
       connectsTo="net.GND"
+      boardEdgeMargin="0.21mm"
     />
     <copperpour
       layer="top"
       connectsTo="net.GND"
+      boardEdgeMargin="0.21mm"
     />
 
     {/* Stitch via to ensure GND zone continuity near right shoulder */}
@@ -223,7 +226,7 @@ export default () => (
     <group
       name="Rom"
       pcbX="-2mm"
-      pcbY="-21mm"
+      pcbY="-17.5mm"
     >
       <ROM_28PIN
         name="U_ROM"
@@ -290,7 +293,7 @@ export default () => (
     <group
       name="GAL"
       pcbX="0mm"
-      pcbY="-4mm"
+      pcbY="-3mm"
     >
       <ATF16V8B
         name="U_GAL"
@@ -338,7 +341,7 @@ export default () => (
     <group
       name="Latch"
       pcbX="0mm"
-      pcbY="8mm"
+      pcbY="9mm"
     >
       <Latch74HCT373
         name="U_LATCH"
@@ -425,35 +428,6 @@ export default () => (
         pcbRotation={270}
         connections={{
           pin1: "net.VCC",
-          pin2: "net.GND",
-        }}
-      />
-      <resistor
-        name="R_RESET"
-        resistance="10k"
-        footprint="axial_p7.62mm"
-        schX={12}
-        schY={10}
-        pcbX="-20mm"
-        pcbY="3mm"
-        layer="bottom"
-        connections={{
-          pin1: "net.VCC",
-          pin2: "net.RESET_DELAYED",
-        }}
-      />
-      <PolarizedCap
-        name="C_RESET"
-        capacitance="10uF"
-        footprint="axial_p7.62mm"
-        polarized
-        schX={14}
-        schY={7}
-        pcbX="-20mm"
-        pcbY="-3mm"
-        layer="bottom"
-        connections={{
-          pin1: "net.RESET_DELAYED",
           pin2: "net.GND",
         }}
       />
