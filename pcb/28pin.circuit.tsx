@@ -3,9 +3,8 @@ import { ROM_28PIN } from "./ROM_28PIN";
 import { ATF16V8B } from "./ATF16V8B";
 import { Latch74HCT373 } from "./74HCT373";
 import { YM2149 } from "./YM2149";
-import { LM358 } from "./LM358";
 import { SolderJumper } from "./SolderJumper";
-import { PolarizedCap } from "./PolarizedCap";
+import { YmResetAmp } from "./YmResetAmp";
 
 export default () => (
   <board
@@ -42,6 +41,8 @@ export default () => (
     <net name="OPAMP_OUT" />
     <net name="CAP_PLUS" />
     <net name="RESET_DELAYED" />
+    <net name="RESET_INV1" />
+    <net name="RC_DELAY" />
     <net name="AMP_UNUSED_FB" />
     <net name="ROM_VPP" />
     <net name="ROM_ADDR14" />
@@ -391,11 +392,11 @@ export default () => (
 
     <group
       name="YM"
-      pcbX="1mm"
+      pcbX="0mm"
       pcbY="25mm"
     >
       <YM2149
-        pcbX="-2mm"
+        pcbX="0mm"
         name="U_YM"
         schX={16}
         schY={0}
@@ -423,7 +424,7 @@ export default () => (
         footprint="axial_p7.62mm"
         schX={18}
         schY={5}
-        pcbX="25mm"
+        pcbX="28.4mm"
         pcbY="0mm"
         pcbRotation={270}
         connections={{
@@ -432,15 +433,15 @@ export default () => (
         }}
       />
       <resistor
-        name="R_YM_AUDIOA"
+        name="R_YM_AUDIOC"
         resistance="3k"
         footprint="axial_p7.62mm"
-        pcbX="8.5mm"
+        pcbX="0mm"
         pcbY="10.5mm"
         schX={24}
-        schY={5}
+        schY={-1}
         connections={{
-          pin1: "net.ANALOG_A",
+          pin1: "net.ANALOG_C",
           pin2: "net.SUM_NODE",
         }}
       />
@@ -448,7 +449,7 @@ export default () => (
         name="R_YM_AUDIOB"
         resistance="3k"
         footprint="axial_p7.62mm"
-        pcbX="19mm"
+        pcbX="21mm"
         pcbY="10.5mm"
         schX={24}
         schY={2}
@@ -458,117 +459,47 @@ export default () => (
         }}
       />
       <resistor
-        name="R_YM_AUDIOC"
+        name="R_YM_AUDIOA"
         resistance="3k"
         footprint="axial_p7.62mm"
-        pcbX="-2mm"
+        pcbX="10.5mm"
         pcbY="10.5mm"
         schX={24}
-        schY={-1}
+        schY={5}
         connections={{
-          pin1: "net.ANALOG_C",
+          pin1: "net.ANALOG_A",
           pin2: "net.SUM_NODE",
         }}
       />
+      <resistor
+        name="R_SERIES"
+        resistance="1k"
+        footprint="axial_p7.62mm"
+        pcbX="-22mm"
+        pcbY="10.5mm"
+        schX={34}
+        schY={0}
+        connections={{
+          pin1: "net.OPAMP_OUT",
+          pin2: "net.CAP_PLUS",
+        }}
+      />
+      <resistor
+        name="R_PULL"
+        resistance="1k"
+        footprint="axial_p7.62mm"
+        pcbX="-11.5mm"
+        pcbY="10.5mm"
+        schX={34}
+        schY={2}
+        connections={{
+          pin1: "net.OPAMP_OUT",
+          pin2: "net.GND",
+        }}
+      />
 
-      {/* LM358 Audio Stage — Eagle's Active Shunt architecture (AtariAge) */}
-      <group
-        name="Amp"
-        pcbX="0mm"
-        pcbY="0mm"
-      >
-        <capacitor
-          name="C_AMP"
-          capacitance="0.1uF"
-          footprint="axial_p7.62mm"
-          pcbX="-7mm"
-          pcbY="0mm"
-          pcbRotation={90}
-          layer="bottom"
-          schX={32}
-          schY={-4}
-          connections={{
-            pin1: "net.VCC",
-            pin2: "net.GND",
-          }}
-        />
-        <resistor
-          name="R_FB"
-          resistance="1k"
-          footprint="axial_p7.62mm"
-          pcbX="-10mm"
-          pcbY="0mm"
-          pcbRotation={90}
-          layer="bottom"
-          schX={34}
-          schY={6}
-          connections={{
-            pin1: "net.SUM_NODE",
-            pin2: "net.OPAMP_OUT",
-          }}
-        />
-        <LM358
-          name="U_AMP"
-          pcbX="0mm"
-          pcbY="0mm"
-          schX={28}
-          schY={2}
-          pcbRotation={270}
-          layer="bottom"
-          connections={{
-            VCC: "net.VCC",
-            GND: "net.GND",
-            IN1_POS: "net.GND",         // Pin 3: Tied to Ground
-            IN1_NEG: "net.SUM_NODE",    // Pin 2: Connected directly to summing node
-            OUT1: "net.OPAMP_OUT",      // Pin 1: Op-amp Output
-            IN2_POS: "net.GND",         // Pin 5: Unused section - input tied to GND
-            IN2_NEG: "net.AMP_UNUSED_FB", // Pin 6: Unused section - shorted to output
-            OUT2: "net.AMP_UNUSED_FB",   // Pin 7: Unity-gain follower (output = GND)
-          }}
-        />
-        <resistor
-          name="R_PULL"
-          resistance="1k"
-          footprint="axial_p7.62mm"
-          pcbX="-12.5mm"
-          pcbY="10.5mm"
-          schX={34}
-          schY={2}
-          connections={{
-            pin1: "net.OPAMP_OUT",
-            pin2: "net.GND",
-          }}
-        />
-        <resistor
-          name="R_SERIES"
-          resistance="1k"
-          footprint="axial_p7.62mm"
-          pcbX="-23mm"
-          pcbY="10.5mm"
-          schX={34}
-          schY={0}
-          connections={{
-            pin1: "net.OPAMP_OUT",
-            pin2: "net.CAP_PLUS",
-          }}
-        />
-        <PolarizedCap
-          name="C_AUDIO_OUT"
-          capacitance="10uF"
-          footprint="axial_p7.62mm"
-          polarized
-          pcbX="12mm"
-          pcbY="0mm"
-          layer="bottom"
-          pcbRotation={90}
-          schX={40}
-          schY={2}
-          connections={{
-            pin1: "net.CAP_PLUS",    // Positive (+) from Series Resistor
-            pin2: "net.SUM_NODE",    // Negative (-) to SUM_NODE / Exaudio (Eagle Active Shunt)
-          }}
-        />
-      </group>
+      {/* Under-YM Cavity Subsystem (Active Reset Delay Buffer + Audio Op-Amp) */}
+      <YmResetAmp />
     </group>
 
 
