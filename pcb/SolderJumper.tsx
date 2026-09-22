@@ -15,7 +15,8 @@ export const SolderJumper = ({ label, labelL, labelR, ...props }: SolderJumperPr
       3: "R", // Option B (e.g. Address line)
     }}
   >
-    <footprint>
+    {/* A solder jumper, not a cable connector: "from_above" opts out of tscircuit's J-prefix orientation check. */}
+    <footprint insertionDirection="from_above">
       {/* Three SMT pads close together for easy solder bridging */}
       <smtpad
         shape="rect"

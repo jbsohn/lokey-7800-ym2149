@@ -148,7 +148,7 @@ The YM2149 uses a multiplexed address/data bus (`DA0–DA7`). When the CPU write
   - Wiring: Pin 1 (gate 1 in) = RC node · Pin 2 (gate 1 out) → Pin 3 (gate 2 in) · Pin 4 (gate 2 out) → YM Pin 23 · Pin 14 = VCC · Pin 7 = GND · Pins 5/9/11/13 (unused gate inputs) → GND · Pins 6/8/10/12 (unused gate outputs) left floating.
   - Old `R_RESET`/`C_RESET` pads are no longer used by this circuit.
   - CD40106 is the part currently in use, confirmed clean on hardware.
-  - Still on hand-wired/DIP prototype; PCB source (`pcb/28pin.circuit.tsx`) and layout haven't been updated yet — pending the planned v0.3 rework.
+  - Integrated into PCB source (`pcb/28pin.circuit.tsx`) via modular component `pcb/YmResetAmp.tsx` located directly under the YM2149 socket cavity on `layer="bottom"`.
 - **Audio Stage**: Based on and adapted from Eagle's cartridge audio design on the AtariAge forums ([thread discussion](https://forums.atariage.com/topic/389754-atari-7800ym2149-clone-prototype/)).
   - **Channel Summing**: `R_YM_AUDIOA/B/C` = 3kΩ (YM `ANALOG A/B/C` → `SUM_NODE`), `R_FB` = 1kΩ (`SUM_NODE` → `OPAMP_OUT`). Each channel gets ~1/3 gain into the LM358 inverting summing junction, so a full 3-voice chord at max volume lands back around a single channel's original headroom instead of stacking 3x — avoids clipping the single-supply LM358 near its rails. (Originally 1kΩ per channel/unity gain; raised to 3kΩ for headroom margin, not yet bench-confirmed against a full 3-voice chord.)
   - `R_PULL` = 1kΩ (`OPAMP_OUT` → GND), `R_SERIES` = 1kΩ (`OPAMP_OUT` → `CAP_PLUS`) into `C_AUDIO_OUT` (10µF) AC-coupling to `Exaudio` — high-pass corner ≈ 16 Hz, well below the audio band.

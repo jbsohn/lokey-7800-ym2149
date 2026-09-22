@@ -9,7 +9,7 @@
   "runArgs": [
     "--platform=linux/amd64"
   ],
-  "postCreateCommand": "cd pcb && npm install",
+  "postCreateCommand": "cd pcb && bun install",
   "customizations": {
     "vscode": {
       "extensions": [

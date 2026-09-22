@@ -1,6 +1,6 @@
 # Lokey 7800 YM2149
 
-> **Status:** Physical v0.2 PCBs (28-pin and 32-pin) have arrived from the manufacturer. The **28-pin board is validated and playing clean audio** with two bodge wires: #1 for ROM `/OE` bus drive and #2 to connect the audio amp stage. Power-on reset behavior (`C_RESET` / `R_RESET`) is still being examined — see [PCB v0.2 Errata & Revision Notes](docs/PCB-Revisions-v0.2.md). The 32-pin (bank-switched) board bring-up is still pending.
+> **Status:** Physical v0.2 PCBs (28-pin and 32-pin) have arrived from the manufacturer. The **28-pin board is validated and playing clean audio** with two bodge wires: #1 for ROM `/OE` bus drive and #2 to connect the audio amp stage. Power-on reset behavior was fixed on hardware with a CD40106 Schmitt-trigger delay buffer and integrated into the v0.3 PCB layout — see [PCB v0.2 Errata & Revision Notes](docs/PCB-Revisions-v0.2.md). The 32-pin (bank-switched) board bring-up is still pending.
 
 ![Physical v0.2 PCBs](docs/pcb-0.2.jpg)
 ![Populated & validated v0.2 28-pin board](docs/pcb-0.2-populated.jpg)
@@ -49,7 +49,7 @@ The **Atari 7800** acts as the **Consumer** of these assets. By bridging the har
 
 A preconfigured Docker Dev Container is provided in `.devcontainer/`. Opening the project in VS Code / GitHub Codespaces pre-loads a gold-standard environment matching CI:
 
-- KiCad 9.0 (`kicad-cli` & `pcbnew`)
+- KiCad 10+ (`kicad-cli`)
 - Java 25 & Freerouting CLI
 - Node.js 20 & Bun
 - `galette` 0.3.0 (PLD logic compiler)
@@ -63,8 +63,8 @@ If building natively outside the container, install the following requirements:
 2. **PLD Logic Assembler**: `galette` 0.3.0 (`cargo install galette --version 0.3.0`).
 3. **PCB Layout & Routing**:
    - Node.js (v18+) & Bun (`npm install -g bun`) for `tscircuit` compilation in `pcb/`.
-   - KiCad (v9.0+) with `kicad-cli` and `pcbnew` Python scripting environment.
-   - Java JRE (21+) with Freerouting (`FREEROUTING_JAR` set to `freerouting-2.4.1.jar`).
+   - KiCad (v10.0+) with `kicad-cli` (no Python scripting needed).
+   - Java JRE (21+). `make freerouting` downloads the pinned Freerouting 2.4.1 jar into `pcb/.tools/` (SHA-256 verified), and the `pcb*` targets fetch it automatically. Set `FREEROUTING_JAR` to use your own copy.
 
 ---
 

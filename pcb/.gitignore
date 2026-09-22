@@ -31,6 +31,4 @@ yarn-error.log*
 # tscircuit cache
 .tscircuit/
 
-# Bun lockfile (using npm)
-bun.lock
 
