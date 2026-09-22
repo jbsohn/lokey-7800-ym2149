@@ -573,7 +573,7 @@ export default () => (
 
 
     <silkscreentext
-      text="Lokey 7800 YM v0.2 - 28pin - github.com/jbsohn/lokey-7800-ym"
+      text="Lokey 7800 YM v0.2 - 28pin - github.com/jbsohn/lokey-7800-ym2149"
       anchorAlignment="top_left"
       pcbX="-26mm"
       pcbY="39mm"

@@ -531,10 +531,8 @@ export default () => (
           name="R_SERIES"
           resistance="1k"
           footprint="axial_p7.62mm"
-          pcbX="-21mm"
-          pcbY="0mm"
-          layer="bottom"
-          pcbRotation={90}
+          pcbX="-22mm"
+          pcbY="10.5mm"
           schX={34}
           schY={0}
           connections={{
@@ -546,10 +544,8 @@ export default () => (
           name="R_PULL"
           resistance="1k"
           footprint="axial_p7.62mm"
-          pcbX="-17mm"
-          pcbY="0mm"
-          layer="bottom"
-          pcbRotation={90}
+          pcbX="-11.5mm"
+          pcbY="10.5mm"
           schX={34}
           schY={2}
           connections={{
@@ -627,7 +623,7 @@ export default () => (
     </group>
 
     <silkscreentext
-      text="Lokey 7800 YM v0.2 - 32pin github.com/jbsohn/lokey-7800-ym"
+      text="Lokey 7800 YM v0.2 - 32pin github.com/jbsohn/lokey-7800-ym2149"
       anchorAlignment="top_left"
       pcbX="-25mm"
       pcbY="39mm"
