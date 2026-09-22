@@ -1,6 +1,6 @@
 # Lokey 7800 YM2149
 
-> **Status:** Physical v0.2 PCBs (28-pin and 32-pin) have arrived from the manufacturer. The **28-pin board is validated and playing clean audio** with two bodge wires: #1 for ROM `/OE` bus drive and #2 to connect the audio amp stage. Power-on reset behavior (`C_RESET` / `R_RESET`) is still being examined — see [PCB v0.2 Errata & Revision Notes](docs/PCB-Revisions-v0.2.md). The 32-pin (bank-switched) board bring-up is still pending.
+> **Status:** Physical v0.2 PCBs (28-pin and 32-pin) have arrived from the manufacturer. The **28-pin board is validated and playing clean audio** with two bodge wires: #1 for ROM `/OE` bus drive and #2 to connect the audio amp stage. Power-on reset behavior was fixed on hardware with a CD40106 Schmitt-trigger delay buffer and integrated into the v0.3 PCB layout — see [PCB v0.2 Errata & Revision Notes](docs/PCB-Revisions-v0.2.md). The 32-pin (bank-switched) board bring-up is still pending.
 
 ![Physical v0.2 PCBs](docs/pcb-0.2.jpg)
 ![Populated & validated v0.2 28-pin board](docs/pcb-0.2-populated.jpg)
