@@ -52,6 +52,7 @@ graph TD
 ## Environment Setup & Build Commands
 
 ### Setup Options
+
 - **Option A (Docker Dev Container — Recommended):** Open `.devcontainer/` in VS Code. Pre-loaded with KiCad, Java 25, Freerouting, Node.js/Bun, `galette`, and `ca65`/`ld65` (the PCB build needs KiCad 10 or newer).
 - **Option B (Native Requirements):**
   - **Bun**: runs `tscircuit` and the PCB build script (`bun install` in `pcb/`).
