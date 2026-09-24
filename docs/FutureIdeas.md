@@ -51,3 +51,17 @@ Adding a dedicated 3.5mm stereo jack directly to the top edge of the cartridge s
 
 - **High Fidelity:** Bypasses the internal RF modulator and audio mixing path of the Atari 7800 console for crystal-clear output.
 - **Stereo Separation:** Allows panning the three PSG channels (e.g., Channel A Left, Channel B Center, Channel C Right) into a true stereo soundfield.
+
+---
+
+## Dual DIP-32 / PLCC-32 Nested ROM Footprint
+
+To ensure 100% long-term component availability from primary authorized distributors (DigiKey, Mouser) without sacrificing through-hole hand assembly:
+
+- **Component Supply:** Through-hole DIP-32 Flash memory (`SST39SF010A` / `020A` / `040` in `-PHE` package) has been discontinued by Microchip and is primarily available through retro suppliers. However, the exact same Flash silicon in the **through-hole compatible PLCC-32 package (`-NHE`) remains in active production** and in stock for ~$1.80.
+- **Nested Footprint Design:** A dual footprint on the 32-pin board nesting an inner through-hole PLCC-32 socket inside the outer 600-mil DIP-32 footprint.
+- **1:1 JEDEC Pin Equivalence:** JEDEC standard 32-pin memory shares identical pin numbering between DIP-32 and PLCC-32 (Pin 1 = NC/A18, Pin 16 = GND, Pin 22 = `/CE`, Pin 24 = `/OE`, Pin 31 = `WE#`, Pin 32 = VCC). Every board trace connects DIP Pin *N* directly to PLCC Pin *N*.
+- **Builder Choice:**
+  - Populate the outer DIP-32 socket for classic UV EPROMs (e.g., ST M27C2001) or bench ZIF testing.
+  - Populate the inner through-hole PLCC-32 socket for brand-new, active-production Flash (`SST39SF020A-70-4C-NHE`).
+- **Cartridge Clearance:** A PLCC-32 through-hole socket is ~18 mm × 18 mm (less than half the length of a 42 mm DIP-32), significantly increasing clearance at the cartridge insertion throat.
