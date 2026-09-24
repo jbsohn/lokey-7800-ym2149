@@ -4,7 +4,7 @@ This document covers the **28-pin ROM board** (`pcb/28pin.circuit.tsx`): a singl
 
 ---
 
-## 1. Programmable Logic Device (ATF16V8B) & `galette`
+## Programmable Logic Device (ATF16V8B) & `galette`
 
 The cartridge uses an **ATF16V8B** (or legacy **GAL16V8**) 20-pin PLD (`U_GAL`) to handle address decoding, bus control, and latch timing.
 
@@ -29,7 +29,7 @@ YMLE = /A15 * /A14 * /A13 * /A12 * A11 * /RW * HALT * PHI2
 
 ---
 
-## 2. System Architecture
+## System Architecture
 
 ```mermaid
 graph TD
@@ -70,7 +70,7 @@ graph TD
 
 ---
 
-## 3. Hardware Pinouts & Connections
+## Hardware Pinouts & Connections
 
 ### ATF16V8B PLD Pinout (`U_GAL`)
 
@@ -141,9 +141,9 @@ The YM2149 uses a multiplexed address/data bus (`DA0–DA7`). When the CPU write
 
 ---
 
-## 4. Hardware Reset & Audio Stage
+## Hardware Reset & Audio Stage
 
-- **Reset Delay** (confirmed on hardware 2026-09-17 — replaces the original passive RC network, which was too slow/analog to survive BIOS RAM-test bus traffic aliased onto `$0800`, see `docs/PCB-Revisions-v0.2.md` §3): a CD40106 hex Schmitt-trigger inverter, two gates wired as a non-inverting buffer, holds Pin 23 at hard GND through BIOS boot (~1.9s) then releases it to VCC — driving Pin 23 directly, no separate pull-up needed.
+- **Reset Delay** (confirmed on hardware 2026-09-17 — replaces the original passive RC network, which was too slow/analog to survive BIOS RAM-test bus traffic aliased onto `$0800`, see `docs/PCB-Revisions-v0.2.md` under `ERR-AUDIO-POP`): a CD40106 hex Schmitt-trigger inverter, two gates wired as a non-inverting buffer, holds Pin 23 at hard GND through BIOS boot (~1.9s) then releases it to VCC — driving Pin 23 directly, no separate pull-up needed.
   - RC timing: R=220kΩ (VCC → node), C=10µF (node → GND, electrolytic, `+` on the node side).
   - Wiring: Pin 1 (gate 1 in) = RC node · Pin 2 (gate 1 out) → Pin 3 (gate 2 in) · Pin 4 (gate 2 out) → YM Pin 23 · Pin 14 = VCC · Pin 7 = GND · Pins 5/9/11/13 (unused gate inputs) → GND · Pins 6/8/10/12 (unused gate outputs) left floating.
   - Old `R_RESET`/`C_RESET` pads are no longer used by this circuit.
@@ -155,7 +155,7 @@ The YM2149 uses a multiplexed address/data bus (`DA0–DA7`). When the CPU write
 
 ---
 
-## 5. Solder Jumper Configurations (ROM Size)
+## Solder Jumper Configurations (ROM Size)
 
 | Jumper | Left pad | Right pad | Purpose |
 | :--- | :--- | :--- | :--- |

@@ -10,12 +10,19 @@ Passive ratings are not fixed by the design; recommended defaults:
 
 ## Build notes (read before populating)
 
-**This board has not yet been bench-validated at all** (unlike the 28-pin board — see `docs/PCB-Revisions-v0.2.md`). The 28-pin board needed two bodge wires (ROM `/OE` → GND; `SUM_NODE` → `C_AUDIO_OUT`) to boot and play sound cleanly — both are already correct at the source level here too (`pcb/32pin.circuit.tsx`), but whether this board's actual fabricated copper matches that (the same freerouting/zone-fill quirk that bit the 28-pin board's `/OE` net could recur) is unknown until someone builds and tests one. Check continuity and audio behavior carefully on first bring-up.
+**Bench-validated on real hardware (2026-09-23)**: The 32-pin board is confirmed booting, bank switching across 14 banks (Banks 0..13) in a 256 KB EPROM (ST M27C2001), and playing clean YM2149 audio on an NTSC Atari 7800 console.
 
-Two further items are optional refinements once the board is confirmed running, same as the 28-pin board — **neither has been tested on 32-pin hardware**:
+### Bring-up notes for v0.2 physical prototype PCBs:
+Both bodges from the 28-pin board are required on the v0.2 32-pin board:
+1. **Bodge #1: ROM `/OE` Ground (`ERR-OE`):** On manufactured v0.2 32-pin boards, ROM Pin 24 (`/OE`) has no copper continuity to ground (stranded during zone fill). **A bodge wire from Pin 24 to GND (Pin 16 or GND plane) is required to boot.** (Fixed in source for v0.3).
+2. **Bodge #2: Audio Out (`ERR-AUDIO-DISTORT`):** The trace connecting `SUM_NODE` to Cart Pin 18 was missing. **A bodge wire from `SUM_NODE` (LM358 Pin 2) to `C_AUDIO_OUT` negative lead / Cart Pin 18 (`Exaudio`) is required for clean, undistorted sound.**
+3. **Audio Summing Resistors:** Ensure `R_YM_AUDIOA`, `R_YM_AUDIOB`, and `R_YM_AUDIOC` (3kΩ) are populated to feed the summing node.
+4. **YM Reset Circuit (CD40106):** Physical v0.2 boards have footprints for passive RC reset (`R_RESET` 10k, `C_RESET` 10µF). During bench bring-up, YM Pin 23 was tied to +5V. For clean power-on without startup buzz from 7800 BIOS RAM-test writes, the board needs the **CD40106** active Schmitt-trigger reset delay circuit proven on the 28-pin board. This is integrated into the v0.3 layout via `pcb/YmResetAmp.tsx` under the YM socket.
 
-- **Silences BIOS-boot startup noise:** Active CD40106 Schmitt-trigger reset-delay circuit integrated directly into the v0.3 PCB layout (in `pcb/YmResetAmp.tsx` under the YM socket). Holds `!RESET` low for ~2.0s during 7800 BIOS boot, eliminating startup static/garble. Confirmed working on the 28-pin board 2026-09-17; integrated into 32-pin source and routes cleanly.
-- **Chord-clipping headroom:** `R_YM_AUDIOA/B/C` below are 3k (raised from 1k) so a full 3-voice chord at max volume doesn't clip the LM358. Same fix as the 28-pin board; unconfirmed on either board against a real chord.
+### v0.3 refinements:
+- **Silences BIOS-boot startup noise:** Active CD40106 Schmitt-trigger reset-delay circuit integrated directly into the v0.3 PCB layout (in `pcb/YmResetAmp.tsx` under the YM socket). Holds `!RESET` low for ~2.0s during 7800 BIOS boot, eliminating startup static/garble. Confirmed working on 28-pin hardware; integrated into 32-pin source and routes cleanly.
+- **Chord-clipping headroom:** `R_YM_AUDIOA/B/C` below are 3k (raised from 1k) so a full 3-voice chord at max volume doesn't clip the LM358.
+
 
 ## Integrated circuits
 
@@ -50,7 +57,6 @@ Two further items are optional refinements once the board is confirmed running, 
 | --- | --- | --- | --- | --- | --- | --- |
 | C_AMP | 0.1uF | ceramic | VCC / GND | bottom | Yes | U_AMP supply decoupling |
 | C_AUDIO_OUT | 10uF | electrolytic, polarized | CAP_PLUS / SUM_NODE | bottom | **Required** | AC-couples audio to Exaudio (cart pin 18) |
-| C_BULK | 10uF | electrolytic, polarized | VCC / GND | bottom | Optional | Bulk rail reservoir / decoupling — Board runs without it; console rail + 0.1 uF caps cover it. OK to leave unpopulated. |
 | C_GAL | 0.1uF | ceramic | VCC / GND | top | Yes | U_GAL supply decoupling |
 | C_LATCH | 0.1uF | ceramic | VCC / GND | top | Yes | U_LATCH supply decoupling |
 | C_RESET | 10uF | electrolytic, polarized | RC_DELAY / GND | bottom | **Required** | Reset delay timing cap (with R_RESET / CD40106) |
@@ -76,7 +82,7 @@ Two further items are optional refinements once the board is confirmed running, 
 | 1 | LM358 | DIP-8, 0.3" | U_AMP |
 | 1 | YM2149 | DIP-40, 0.6" | U_YM |
 | 5 | 0.1uF | Axial, 7.62 mm pitch | C_AMP, C_GAL, C_LATCH, C_ROM, C_YM |
-| 2-3 | 10uF | Axial, 7.62 mm pitch | C_AUDIO_OUT, C_RESET (C_BULK optional) |
+| 2 | 10uF | Axial, 7.62 mm pitch | C_AUDIO_OUT, C_RESET |
 | 4 | 10k | Axial, 7.62 mm pitch | R_BANK0, R_BANK1, R_BANK2, R_BANK3 |
 | 1 | 220k | Axial, 7.62 mm pitch | R_RESET |
 | 3 | 1k | Axial, 7.62 mm pitch | R_FB, R_PULL, R_SERIES |

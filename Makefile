@@ -43,10 +43,13 @@ FREEROUTING_DEP     := $(if $(filter $(abspath $(FREEROUTING_LOCAL)),$(FREEROUTI
 # --- Demos & Targets ---
 BANKED_A78S    := $(BUILD_DIR)/bank.a78
 BANKED_ROMS    := $(BUILD_DIR)/bank.rom
+COLOR_A78S     := $(BUILD_DIR)/color_test.a78
+COLOR_ROMS     := $(BUILD_DIR)/color_test.rom
+COLOR_256K_ROM := $(BUILD_DIR)/color_test_256k.rom
 
-.PHONY: all help clean distclean logic rom a78 freerouting pcb pcb-28pin pcb-32pin pcb-check schematic schematic-28pin schematic-32pin previews previews-28pin previews-32pin bank
+.PHONY: all help clean distclean logic rom a78 freerouting pcb pcb-28pin pcb-32pin pcb-check schematic schematic-28pin schematic-32pin previews previews-28pin previews-32pin bank color_test
 
-all: bank logic
+all: bank color_test logic
 
 # --- PCB Targets ---
 pcb/node_modules: pcb/package.json
@@ -139,6 +142,12 @@ a78: $(BUILD_DIR) $(BANKED_A78S)
 
 bank: $(BUILD_DIR) $(BANKED_A78S) $(BANKED_ROMS)
 
+color_test: $(BUILD_DIR) $(COLOR_A78S) $(COLOR_ROMS) $(COLOR_256K_ROM)
+
+$(COLOR_256K_ROM): $(COLOR_ROMS)
+	@echo "  Creating 256KB mirrored ROM (8x 32KB): $@"
+	@cat $< $< $< $< $< $< $< $< > $@
+
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
 
@@ -186,6 +195,7 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "  make bank      - Build 32-pin bank-select chromatic scale demo (.a78 + .rom)"
+	@echo "  make color_test - Build 32KB fixed color test (.a78 + .rom + 256k mirrored)"
 	@echo "  make freerouting - Download the pinned Freerouting jar into pcb/.tools (SHA-256 verified)"
 	@echo "  make pcb-28pin - Build 28-pin board PCB (tscircuit -> Freerouting -> Gerbers)"
 	@echo "  make pcb-32pin - Build 32-pin board PCB (tscircuit -> Freerouting -> Gerbers)"

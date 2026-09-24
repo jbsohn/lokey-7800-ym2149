@@ -12,8 +12,8 @@ Passive ratings are not fixed by the design; recommended defaults:
 
 Two bodge wires get a v0.2 board booting and playing sound for the most part — everything else below is an optional refinement, not required to get a working board:
 
-1. **ROM pin 22 (`/OE`) → GND**, landed on ROM pin 14 (also GND). A known freerouting/zone-fill quirk can leave this pad disconnected from the GND pour despite the design tying it to ground in source — verify continuity after assembly and bodge if missing. See `docs/PCB-Revisions-v0.2.md` §1.
-2. **`SUM_NODE` (LM358 pin 2) → `C_AUDIO_OUT` pin 2 (`Exaudio`, cart pin 18)**. Already fixed at the source level (`Exaudio` ties directly to `SUM_NODE` in `pcb/28pin.circuit.tsx`) — only needed if populating a board fabbed before that fix. See `docs/PCB-Revisions-v0.2.md` §2.
+1. **ROM pin 22 (`/OE`) → GND**, landed on ROM pin 14 (also GND). A known freerouting/zone-fill quirk can leave this pad disconnected from the GND pour despite the design tying it to ground in source — verify continuity after assembly and bodge if missing. See `docs/PCB-Revisions-v0.2.md` (`ERR-OE`).
+2. **`SUM_NODE` (LM358 pin 2) → `C_AUDIO_OUT` pin 2 (`Exaudio`, cart pin 18)**. Already fixed at the source level (`Exaudio` ties directly to `SUM_NODE` in `pcb/28pin.circuit.tsx`) — only needed if populating a board fabbed before that fix. See `docs/PCB-Revisions-v0.2.md` (`ERR-AUDIO-DISTORT`).
 
 Optional refinements (board works without either of these, just with some rough edges):
 

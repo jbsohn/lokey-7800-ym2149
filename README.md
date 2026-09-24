@@ -1,9 +1,12 @@
 # Lokey 7800 YM2149
 
-> **Status:** Physical v0.2 PCBs (28-pin and 32-pin) have arrived from the manufacturer. The **28-pin board is validated and playing clean audio** with two bodge wires: #1 for ROM `/OE` bus drive and #2 to connect the audio amp stage. Power-on reset behavior was fixed on hardware with a CD40106 Schmitt-trigger delay buffer and integrated into the v0.3 PCB layout — see [PCB v0.2 Errata & Revision Notes](docs/PCB-Revisions-v0.2.md). The 32-pin (bank-switched) board bring-up is still pending.
+> **Status:** Physical v0.2 PCBs (28-pin and 32-pin) have arrived and are **both bench-validated and working on real hardware**! Both boards require the same two bodge wires on the v0.2 prototypes: **#1 ROM `/OE` ground** (pin 22 on 28-pin, pin 24 on 32-pin), and **#2 audio output** (`SUM_NODE` to Cart Pin 18 `Exaudio`). The 28-pin board is validated with 32 KB ROM; the 32-pin board is confirmed booting, bank switching across 14 banks in a 256 KB EPROM (ST M27C2001), and playing clean YM2149 audio. Power-on reset behavior was fixed on hardware with a CD40106 Schmitt-trigger delay buffer and integrated into the v0.3 PCB layout for both boards — see [PCB v0.2 Errata & Revision Notes](docs/PCB-Revisions-v0.2.md).
 
 ![Physical v0.2 PCBs](docs/pcb-0.2.jpg)
-![Populated & validated v0.2 28-pin board](docs/pcb-0.2-populated.jpg)
+
+| Populated v0.2 28-Pin Board (Fixed ROM) | Populated v0.2 32-Pin Board (Bank-Switched) |
+| :---: | :---: |
+| ![Populated & validated v0.2 28-pin board](docs/pcb-0.2-populated.jpg) | ![Populated & validated v0.2 32-pin board](docs/pcb-0.2-32pin-populated.jpg) |
 
 ## Project Overview
 
@@ -101,6 +104,7 @@ This project is organized across 3 dedicated repositories:
   - **[32-Pin Board Hardware Spec](docs/Hardware-32pin.md)** — 32-pin schematic, ATF22V10 pinout, bank switching layout.
 - **[PCB Design & Routing Pipeline](docs/PCB.md)** — `tscircuit` React components, KiCad post-routing scripts, and Gerbers build pipeline.
 - **[Emulator Support](docs/Emulation.md)** — A78 header spec and `a7800` / `js7800` / `test7800` emulator forks.
+- **[Future Ideas & Enhancements](docs/FutureIdeas.md)** — Hardware roadmap: spare YM I/O pins (SPI save EEPROM, MIDI), ATtiny supervisor, direct stereo out.
 
 ---
 

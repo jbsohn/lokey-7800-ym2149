@@ -308,22 +308,6 @@ export default () => (
           pin2: "net.GND",
         }}
       />
-      <PolarizedCap
-        name="C_BULK"
-        capacitance="10uF"
-        polarized
-        footprint="axial_p7.62mm"
-        pcbX="7mm"
-        pcbY="0mm"
-        layer="bottom"
-        schX={-6}
-        schY={-12}
-        pcbRotation={90}
-        connections={{
-          pin1: "net.VCC",
-          pin2: "net.GND",
-        }}
-      />
       {/* Bank pull-ups on the GAL's IOA inputs: power-on bank = 15 (a mirror
           of the fixed region) while YM IOA is Hi-Z (input mode) */}
       <resistor

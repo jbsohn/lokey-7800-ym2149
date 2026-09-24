@@ -4,7 +4,7 @@ This document covers the **32-pin ROM board** (`pcb/32pin.circuit.tsx`): a singl
 
 ---
 
-## 1. Programmable Logic Device (ATF22V10) & `galette`
+## Programmable Logic Device (ATF22V10) & `galette`
 
 The 32-pin board uses a 24-pin **ATF22V10 PLD** (`U_GAL`). It performs both address decoding ($0800/$0801 sound writes and $4000–$FFFF ROM reads) *and* ROM bank mapping: YM2149 IOA pins feed the PLD, which generates ROM upper address lines `ROMA14–ROMA17`.
 
@@ -34,7 +34,7 @@ ROMA17  = A15 + IOA3
 
 ---
 
-## 2. Memory Layout & Software Protocol
+## Memory Layout & Software Protocol
 
 | Address Range | Function | ROM Mapping |
 | :--- | :--- | :--- |
@@ -50,7 +50,7 @@ ROMA17  = A15 + IOA3
 
 ---
 
-## 3. Hardware Pinouts & Connections
+## Hardware Pinouts & Connections
 
 ### ATF22V10 PLD Pinout (`U_GAL`)
 
@@ -96,8 +96,8 @@ ROMA17  = A15 + IOA3
 
 - Pins 0–13: Address bus A0–A13 from 7800 Console.
 - Pins 29, 3, 2, 30: Address lines A14–A17 from PLD (Pins 15–18).
-- Pin 31 (PGM/A18): Tied to VCC (forces upper 256KB on AT27C040).
-- Pin 22 (~CE): Driven by PLD Pin 19 (`!ROM_CE`). Pin 24 (~OE) tied to GND.
+- Pin 31 (PGM/A18): Tied to VCC (forces upper 256KB on AT27C040; planned future revision will route YM `IOA4` through the PLD to drive Pin 31 as `ROMA18` for thirty 16KB banks / 512KB total).
+- Pin 22 (~CE): Driven by PLD Pin 19 (`!ROM_CE`). Pin 24 (~OE) tied to GND (on physical v0.2 prototype boards, requires a bodge wire to GND; see [PCB-Revisions-v0.2.md](PCB-Revisions-v0.2.md)).
 
 ### YM2149 PSG (`U_YM`)
 
@@ -106,12 +106,13 @@ ROMA17  = A15 + IOA3
 
 ---
 
-## 4. Analog & Reset Subsystems
+## Analog & Reset Subsystems
 
-- **Reset Delay**: CD40106/74HC14 Schmitt-trigger delay (same design as the 28-pin board — see `docs/Hardware-28pin.md` §4 and `docs/PCB-Revisions-v0.2.md` §3 for the full story, root cause, and rejected alternatives). Two gates of a CD40106 hex Schmitt-trigger inverter, wired as a non-inverting buffer, hold YM Pin 23 (`!RESET`) at hard GND through BIOS boot (~1.9s) then release it to VCC — driving Pin 23 directly, no separate pull-up needed.
+- **Reset Delay**: CD40106 Schmitt-trigger delay (same design as the 28-pin board — see `docs/Hardware-28pin.md` (Hardware Reset & Audio Stage) and `docs/PCB-Revisions-v0.2.md` (ERR-AUDIO-POP) for the full story, root cause, and rejected alternatives). Two gates of a CD40106 hex Schmitt-trigger inverter, wired as a non-inverting buffer, hold YM Pin 23 (`!RESET`) at hard GND through BIOS boot (~1.9s) then release it to VCC — driving Pin 23 directly, no separate pull-up needed.
   - RC timing: R=220kΩ (VCC → node), C=10µF (node → GND, electrolytic, `+` on the node side).
+  - Physical v0.2 Prototype Note: The v0.2 32-pin prototype was fabricated with passive RC pads (`R_RESET`/`C_RESET`) and was bench-tested with Pin 23 tied high. The CD40106 active delay is integrated into the v0.3 layout (`pcb/32pin.circuit.tsx` via `pcb/YmResetAmp.tsx`) directly under the YM socket cavity to silence startup BIOS writes.
   - Production: CD40106 is the part currently in use and integrated into PCB source (`pcb/32pin.circuit.tsx`) via modular component `pcb/YmResetAmp.tsx` directly under the YM socket cavity. (74HC14 alternative rejected due to lower threshold $V_{T+} \approx 2.5\text{V}$ releasing reset prematurely during BIOS tests).
   - Confirmed on real 28-pin hardware; integrated into 32-pin PCB design and validated clean through Freerouting and DRC.
 - **Audio Stage**: Based on and adapted from Eagle's cartridge audio design on the AtariAge forums ([thread discussion](https://forums.atariage.com/topic/389754-atari-7800ym2149-clone-prototype/)).
-  - **Channel Summing**: `R_YM_AUDIOA/B/C` = 3kΩ (YM `ANALOG A/B/C` → `SUM_NODE`), `R_FB` = 1kΩ (`SUM_NODE` → `OPAMP_OUT`). Each channel gets ~1/3 gain into the LM358 inverting summing junction, so a full 3-voice chord at max volume lands back around a single channel's original headroom instead of stacking 3x — avoids clipping the single-supply LM358 near its rails. Same fix as the 28-pin board (`docs/Hardware-28pin.md` §4) — originally 1kΩ/unity gain. **Not yet bench-tested on the 32-pin board** (the 28-pin board's version of this change is also still unconfirmed against a real 3-voice chord).
+  - **Channel Summing**: `R_YM_AUDIOA/B/C` = 3kΩ (YM `ANALOG A/B/C` → `SUM_NODE`), `R_FB` = 1kΩ (`SUM_NODE` → `OPAMP_OUT`). Each channel gets ~1/3 gain into the LM358 inverting summing junction, so a full 3-voice chord at max volume lands back around a single channel's original headroom instead of stacking 3x — avoids clipping the single-supply LM358 near its rails. Same fix as the 28-pin board (`docs/Hardware-28pin.md`, Hardware Reset & Audio Stage) — originally 1kΩ/unity gain. Bench-tested clean on 2026-09-23 on the 32-pin board.
   - `R_PULL` = 1kΩ (`OPAMP_OUT` → GND), `R_SERIES` = 1kΩ (`OPAMP_OUT` → `CAP_PLUS`) into the AC-coupling cap to `Exaudio`.
