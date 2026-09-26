@@ -2,6 +2,12 @@ import { convertCircuitJsonToDsnString } from "dsn-converter";
 
 const MIN_CLEARANCE_UM = 200;
 
+// dsn-converter can emit numbers in scientific notation (e.g. 7.77e-13 from trig rotation).
+// Specctra DSN format and freerouting regexes require standard decimal/integer numbers.
+function normalizeScientific(dsn: string): string {
+  return dsn.replace(/\b-?\d+(?:\.\d+)?[eE][+-]?\d+\b/g, (m) => (Math.abs(Number(m)) < 1e-4 ? "0" : String(Number(m))));
+}
+
 // dsn-converter keys each footprint image on `ftype + width x height` and reuses one
 // part's pins for every part in that group, so same-size parts with different pin
 // orientations get each other's pins (freerouting then misses their pads). Make the
@@ -215,7 +221,14 @@ export function verifyDsn(dsn: string, circuitJson: any[]): void {
 
 export function buildDsn(circuitJson: any[]): string {
   const dsn = patchDsn(
-    addUnconnectedPinNets(dropDuplicateTraceNets(fixUnportedPinIds(convertCircuitJsonToDsnString(withUniqueImages(circuitJson)), circuitJson))),
+    addUnconnectedPinNets(
+      dropDuplicateTraceNets(
+        fixUnportedPinIds(
+          normalizeScientific(convertCircuitJsonToDsnString(withUniqueImages(circuitJson))),
+          circuitJson,
+        ),
+      ),
+    ),
     circuitJson,
   );
   verifyDsn(dsn, circuitJson);

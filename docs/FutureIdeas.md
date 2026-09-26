@@ -1,6 +1,6 @@
 # Future Ideas & Experimental Enhancements
 
-This document captures long-term project roadmaps, experimental concepts, and hardware expansion ideas for the Lokey 7800 YM project.
+This document captures long-term project roadmaps, experimental concepts, and hardware expansion ideas for the Lokey 7800 YM2149 project.
 
 ---
 

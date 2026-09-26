@@ -226,11 +226,13 @@ export default () => (
 
     <group
       name="Rom"
-      pcbX="-2mm"
-      pcbY="-17.5mm"
+      pcbX="-1mm"
+      pcbY="-16mm"
     >
       <ROM_28PIN
         name="U_ROM"
+        pcbX="0mm"
+        pcbY="0mm"
         schX={2}
         schY={-8}
         pcbRotation={270}
@@ -294,7 +296,7 @@ export default () => (
     <group
       name="GAL"
       pcbX="0mm"
-      pcbY="-3mm"
+      pcbY="0mm"
     >
       <ATF16V8B
         name="U_GAL"
@@ -342,7 +344,7 @@ export default () => (
     <group
       name="Latch"
       pcbX="0mm"
-      pcbY="9mm"
+      pcbY="11mm"
     >
       <Latch74HCT373
         name="U_LATCH"
@@ -393,7 +395,7 @@ export default () => (
     <group
       name="YM"
       pcbX="0mm"
-      pcbY="25mm"
+      pcbY="27mm"
     >
       <YM2149
         pcbX="0mm"
@@ -424,7 +426,7 @@ export default () => (
         footprint="axial_p7.62mm"
         schX={18}
         schY={5}
-        pcbX="28.4mm"
+        pcbX="27mm"
         pcbY="0mm"
         pcbRotation={270}
         connections={{
@@ -504,10 +506,10 @@ export default () => (
 
 
     <silkscreentext
-      text="Lokey 7800 YM v0.2 - 28pin - github.com/jbsohn/lokey-7800-ym2149"
-      anchorAlignment="top_left"
-      pcbX="-26mm"
-      pcbY="39mm"
+      text="Lokey 7800 YM v0.3\n28pin github.com/jbsohn/lokey-7800-ym2149"
+      anchorAlignment="top_center"
+      pcbX="0mm"
+      pcbY="-27mm"
       fontSize="1.2mm"
     />
   </board >

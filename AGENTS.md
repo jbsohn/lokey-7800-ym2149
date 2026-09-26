@@ -1,6 +1,6 @@
 # Atari 7800 YM2149 Project Agents
 
-This document defines specialized subagents for the Lokey 7800 YM project. These agents provide deep expertise in specific domains of the project, from 6502 assembly to PCB design.
+This document defines specialized subagents for the Lokey 7800 YM2149 project. These agents provide deep expertise in specific domains of the project, from 6502 assembly to PCB design.
 
 ---
 

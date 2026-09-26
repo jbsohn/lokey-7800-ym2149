@@ -32,7 +32,8 @@ Both bodges from the 28-pin board are required on the v0.2 32-pin board:
 | U_GAL | ATF22V10 | DIP-24, 0.3" | top | Address-decode / bus-control PLD, programmed with pld/*.pld (make logic) |
 | U_LATCH | 74HCT373 | DIP-20, 0.3" | top | Octal transparent latch — D0-D7 to YM DA0-DA7 |
 | U_RESET | CD40106 | DIP-14, 0.3" | bottom | Hex Schmitt-trigger inverter — active reset delay buffer (silences BIOS noise) |
-| U_ROM | 27C010/27C020/27C040 | DIP-32, 0.6" | top | Program ROM (image burned per build) |
+| U_ROM | 27C010/27C020/27C040 | DIP-32, 0.6" | top | Program ROM (DIP option; mutually exclusive with U_ROM_PLCC) |
+| U_ROM_PLCC | SST39SF010A/020A/040 | PLCC-32 SMD | top | Program Flash (PLCC option; mutually exclusive with U_ROM) |
 | U_YM | YM2149 | DIP-40, 0.6" | top | Programmable sound generator (AY-3-8910 largely pin-compatible) |
 
 ## Resistors
@@ -96,7 +97,8 @@ Both bodges from the 28-pin board are required on the v0.2 32-pin board:
 | U_GAL | DIP, 0.3" |
 | U_LATCH | DIP, 0.3" (optional) |
 | U_RESET | DIP, 0.3" (optional) |
-| U_ROM | DIP, 0.6" |
+| U_ROM | DIP, 0.6" (populate either U_ROM or U_ROM_PLCC) |
+| U_ROM_PLCC | PLCC-32 SMD socket (populate either U_ROM or U_ROM_PLCC) |
 | U_YM | DIP, 0.6" |
 
 ### Banking

@@ -1,5 +1,6 @@
 import Atari7800EdgeConnector, { ATARI_7800_CONNECTOR_OUTLINE } from "./Atari7800EdgeConnector";
 import { ROM_32PIN } from "./ROM_32PIN";
+import { ROM_PLCC32 } from "./ROM_PLCC32";
 import { ATF22V10 } from "./ATF22V10";
 import { Latch74HCT373 } from "./74HCT373";
 import { YM2149 } from "./YM2149";
@@ -216,7 +217,7 @@ export default () => (
     <group
       name="GAL"
       pcbX="-1mm"
-      pcbY="-3mm"
+      pcbY="0mm"
     >
       <ATF22V10
         name="U_GAL"
@@ -269,10 +270,12 @@ export default () => (
     <group
       name="Rom"
       pcbX="-1mm"
-      pcbY="-17.5mm"
+      pcbY="-16mm"
     >
       <ROM_32PIN
         name="U_ROM"
+        pcbX="0mm"
+        pcbY="0mm"
         schX={1}
         schY={-8}
         pcbRotation={270}
@@ -290,6 +293,33 @@ export default () => (
           A16: "net.ROM_A16",    // pin 2:  from GAL (forced high or bank bit 2)
           A17: "net.ROM_A17",    // pin 30: from GAL (forced high or bank bit 3)
           A18: "net.VCC",        // pin 31: PGM high (27C010/020) / A18 high = top half (27C040)
+          D0: "net.D0", D1: "net.D1", D2: "net.D2", D3: "net.D3", D4: "net.D4",
+          D5: "net.D5", D6: "net.D6", D7: "net.D7",
+        }}
+      />
+      {/* Optional SMT PLCC-32 socket footprint (SST39SF010A/020A/040) centered
+          inside the DIP-32 socket cavity for developers who prefer PLCC Flash over DIP. */}
+      <ROM_PLCC32
+        name="U_ROM_PLCC"
+        pcbX="0mm"
+        pcbY="0mm"
+        schX={1}
+        schY={-16}
+        pcbRotation={90}
+        connections={{
+          VCC: "net.VCC",
+          VPP: "net.VCC",        // pin 1: VCC (read mode / Flash A18 high)
+          GND: "net.GND",
+          OE: "net.GND",
+          CE: "net.ROM_CE",
+          A0: "net.A0", A1: "net.A1", A2: "net.A2", A3: "net.A3", A4: "net.A4",
+          A5: "net.A5", A6: "net.A6", A7: "net.A7", A8: "net.A8", A9: "net.A9",
+          A10: "net.A10", A11: "net.A11", A12: "net.A12", A13: "net.A13",
+          A14: "net.ROM_A14",    // pin 29: from GAL (console A14 or bank bit 0)
+          A15: "net.ROM_A15",    // pin 3:  from GAL (forced high or bank bit 1)
+          A16: "net.ROM_A16",    // pin 2:  from GAL (forced high or bank bit 2)
+          A17: "net.ROM_A17",    // pin 30: from GAL (forced high or bank bit 3)
+          A18: "net.VCC",        // pin 31: WE# high (Flash write disable) / PGM high (27C010/020)
           D0: "net.D0", D1: "net.D1", D2: "net.D2", D3: "net.D3", D4: "net.D4",
           D5: "net.D5", D6: "net.D6", D7: "net.D7",
         }}
@@ -374,7 +404,7 @@ export default () => (
     <group
       name="Latch"
       pcbX="-1mm"
-      pcbY="9mm"
+      pcbY="11mm"
     >
       <Latch74HCT373
         name="U_LATCH"
@@ -425,7 +455,7 @@ export default () => (
     <group
       name="YM"
       pcbX="0mm"
-      pcbY="25mm"
+      pcbY="27mm"
     >
       <YM2149
         pcbX="0mm"
@@ -460,7 +490,7 @@ export default () => (
         footprint="axial_p7.62mm"
         schX={18}
         schY={5}
-        pcbX="28.4mm"
+        pcbX="27mm"
         pcbY="0mm"
         pcbRotation={270}
         connections={{
@@ -542,10 +572,10 @@ export default () => (
     </group>
 
     <silkscreentext
-      text="Lokey 7800 YM v0.2 - 32pin github.com/jbsohn/lokey-7800-ym2149"
-      anchorAlignment="top_left"
-      pcbX="-25mm"
-      pcbY="39mm"
+      text="Lokey 7800 YM2149 v0.3\n32pin github.com/jbsohn/lokey-7800-ym2149"
+      anchorAlignment="top_center"
+      pcbX="0mm"
+      pcbY="-27mm"
       fontSize="1.2mm"
     />
   </board >

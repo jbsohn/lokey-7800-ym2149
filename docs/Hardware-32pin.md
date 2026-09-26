@@ -92,12 +92,23 @@ ROMA17  = A15 + IOA3
 | 20 | VCC | +5V |
 | 10 | GND | Ground |
 
-### DIP-32 ROM Socket (`U_ROM` — AT27C010 / AT27C020 / AT27C040)
+### ROM Sockets (Dual Footprint: DIP-32 `U_ROM` or PLCC-32 `U_ROM_PLCC`)
 
-- Pins 0–13: Address bus A0–A13 from 7800 Console.
+The 32-pin board features a **nested combo footprint** on the top layer, allowing the developer to populate **either** a through-hole DIP-32 socket or a surface-mount PLCC-32 socket (mutually exclusive):
+
+1. **Through-Hole DIP-32 Socket (`U_ROM`)**:
+   - For UV EPROMs (`AT27C010`, `AT27C020`, `AT27C040`, `M27C2001`) or DIP Flash.
+2. **Surface-Mount PLCC-32 Socket (`U_ROM_PLCC`)**:
+   - For standard 5V parallel Flash memory (`SST39SF010A`, `SST39SF020A`, `SST39SF040`, `AT29C010A`, `AT29C020A`).
+   - Solder pads sit directly inside the DIP-32 cavity on the top layer (`F.Cu`).
+
+**Signal Mapping (Shared 1:1 on both footprints)**:
+- Pins 5–12, 4, 23, 25, 26, 27, 28: Address bus A0–A13 from 7800 Console.
 - Pins 29, 3, 2, 30: Address lines A14–A17 from PLD (Pins 15–18).
-- Pin 31 (PGM/A18): Tied to VCC (forces upper 256KB on AT27C040; planned future revision will route YM `IOA4` through the PLD to drive Pin 31 as `ROMA18` for thirty 16KB banks / 512KB total).
-- Pin 22 (~CE): Driven by PLD Pin 19 (`!ROM_CE`). Pin 24 (~OE) tied to GND (on physical v0.2 prototype boards, requires a bodge wire to GND; see [PCB-Revisions-v0.2.md](PCB-Revisions-v0.2.md)).
+- Pin 31: Tied to VCC. On EPROMs (`27C010`/`020`), holds `PGM#` high (read mode) or forces upper 256KB on `27C040` (`A18`). On Flash (`SST39SF010A`/`020A`/`040`), holds `WE#` high, keeping Flash safely write-protected in read-only mode.
+- Pin 1: Tied to VCC (`VPP` read mode on EPROMs; `A18` high on `SST39SF040` selecting upper 256KB).
+- Pin 22 (~CE): Driven by PLD Pin 19 (`!ROM_CE`).
+- Pin 24 (~OE): Tied to GND (output always enabled when chip selected).
 
 ### YM2149 PSG (`U_YM`)
 
