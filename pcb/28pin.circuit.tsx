@@ -251,12 +251,13 @@ export default () => (
       />
       <SolderJumper
         name="JP1"
-        pcbX="23mm"
-        pcbY="4.5mm"
+        pcbX="16mm"
+        pcbY="3.5mm"
         pcbRotation={90}
         label="JP1 (VPP)"
         labelL="VCC"
         labelR="A15"
+        layer="bottom"
         connections={{
           L: "net.VCC",
           C: "net.ROM_VPP",
@@ -265,12 +266,13 @@ export default () => (
       />
       <SolderJumper
         name="JP2"
-        pcbX="23mm"
-        pcbY="-4.5mm"
+        pcbX="16mm"
+        pcbY="-3.5mm"
         pcbRotation={90}
         label="JP2 (A14)"
         labelL="VCC"
         labelR="A14"
+        layer="bottom"
         connections={{
           L: "net.VCC",
           C: "net.ROM_ADDR14",
@@ -320,8 +322,6 @@ export default () => (
           ROM_CE: "net.ROM_CE",
           BDIR: "net.BDIR",
           BC1: "net.BC1",
-          PHI2OUT: "net.PHI2OUT",
-          YM_LE: "net.YM_LE",
         }}
       />
       <capacitor
@@ -357,7 +357,7 @@ export default () => (
           VCC: "net.VCC",
           GND: "net.GND",
           OE: "net.GND",
-          LE: "net.YM_LE",
+          LE: "net.BDIR",
           D0: "net.D0",
           D1: "net.D1",
           D2: "net.D2",
@@ -409,7 +409,7 @@ export default () => (
           GND: "net.GND",
           DA0: "net.DA0", DA1: "net.DA1", DA2: "net.DA2", DA3: "net.DA3",
           DA4: "net.DA4", DA5: "net.DA5", DA6: "net.DA6", DA7: "net.DA7",
-          CLK: "net.PHI2OUT",
+          CLK: "net.PHI2",
           BDIR: "net.BDIR",
           BC1: "net.BC1",
           RESET: "net.RESET_DELAYED",

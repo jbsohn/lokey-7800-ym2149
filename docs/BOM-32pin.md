@@ -12,17 +12,19 @@ Passive ratings are not fixed by the design; recommended defaults:
 
 **Bench-validated on real hardware (2026-09-23)**: The 32-pin board is confirmed booting, bank switching across 14 banks (Banks 0..13) in a 256 KB EPROM (ST M27C2001), and playing clean YM2149 audio on an NTSC Atari 7800 console.
 
-### Bring-up notes for v0.2 physical prototype PCBs:
+### Bring-up notes for v0.2 physical prototype PCBs
+
 Both bodges from the 28-pin board are required on the v0.2 32-pin board:
+
 1. **Bodge #1: ROM `/OE` Ground (`ERR-OE`):** On manufactured v0.2 32-pin boards, ROM Pin 24 (`/OE`) has no copper continuity to ground (stranded during zone fill). **A bodge wire from Pin 24 to GND (Pin 16 or GND plane) is required to boot.** (Fixed in source for v0.3).
 2. **Bodge #2: Audio Out (`ERR-AUDIO-DISTORT`):** The trace connecting `SUM_NODE` to Cart Pin 18 was missing. **A bodge wire from `SUM_NODE` (LM358 Pin 2) to `C_AUDIO_OUT` negative lead / Cart Pin 18 (`Exaudio`) is required for clean, undistorted sound.**
 3. **Audio Summing Resistors:** Ensure `R_YM_AUDIOA`, `R_YM_AUDIOB`, and `R_YM_AUDIOC` (3kΩ) are populated to feed the summing node.
 4. **YM Reset Circuit (CD40106):** Physical v0.2 boards have footprints for passive RC reset (`R_RESET` 10k, `C_RESET` 10µF). During bench bring-up, YM Pin 23 was tied to +5V. For clean power-on without startup buzz from 7800 BIOS RAM-test writes, the board needs the **CD40106** active Schmitt-trigger reset delay circuit proven on the 28-pin board. This is integrated into the v0.3 layout via `pcb/YmResetAmp.tsx` under the YM socket.
 
-### v0.3 refinements:
+### v0.3 refinements
+
 - **Silences BIOS-boot startup noise:** Active CD40106 Schmitt-trigger reset-delay circuit integrated directly into the v0.3 PCB layout (in `pcb/YmResetAmp.tsx` under the YM socket). Holds `!RESET` low for ~2.0s during 7800 BIOS boot, eliminating startup static/garble. Confirmed working on 28-pin hardware; integrated into 32-pin source and routes cleanly.
 - **Chord-clipping headroom:** `R_YM_AUDIOA/B/C` below are 3k (raised from 1k) so a full 3-voice chord at max volume doesn't clip the LM358.
-
 
 ## Integrated circuits
 
@@ -40,10 +42,11 @@ Both bodges from the 28-pin board are required on the v0.2 32-pin board:
 
 | Ref | Value | Connections | Layer | Function |
 | --- | --- | --- | --- | --- |
-| R_BANK0 | 10k | VCC / YM_IOA0 | bottom | YM IOA0 power-up pull-up (bank select) |
-| R_BANK1 | 10k | VCC / YM_IOA1 | bottom | YM IOA1 power-up pull-up (bank select) |
-| R_BANK2 | 10k | VCC / YM_IOA2 | bottom | YM IOA2 power-up pull-up (bank select) |
-| R_BANK3 | 10k | VCC / YM_IOA3 | bottom | YM IOA3 power-up pull-up (bank select) |
+| R_BANK0 | 10k | VCC / YM_IOA0 | bottom | YM IOA0 power-up pull-up (bank bit 0) |
+| R_BANK1 | 10k | VCC / YM_IOA1 | bottom | YM IOA1 power-up pull-up (bank bit 1) |
+| R_BANK2 | 10k | VCC / YM_IOA2 | bottom | YM IOA2 power-up pull-up (bank bit 2) |
+| R_BANK3 | 10k | VCC / YM_IOA3 | bottom | YM IOA3 power-up pull-up (bank bit 3) |
+| R_BANK4 | 10k | VCC / YM_IOA4 | bottom | YM IOA4 power-up pull-up (bank bit 4, 512KB) |
 | R_FB | 1k | SUM_NODE / OPAMP_OUT | bottom | LM358 inverting-stage feedback resistor |
 | R_PULL | 1k | OPAMP_OUT / GND | top | Class-A bias / output pulldown |
 | R_RESET | 220k | VCC / RC_DELAY | bottom | Reset RC pull-up (with C_RESET), ~2.0s YM release delay through CD40106 |
@@ -69,6 +72,7 @@ Both bodges from the 28-pin board are required on the v0.2 32-pin board:
 | Ref | What it is |
 | --- | --- |
 | J1 | Atari 7800 cartridge edge connector — gold PCB fingers, part of the board |
+| JP_A18 | Solder jumper — selects DIP Pin 31 function: VCC (128K/256K EPROMs) vs ROM_A18 (512K 27C040) |
 | U6 | GND-plane stitching via — plated hole only |
 | U7 | GND-plane stitching via — plated hole only |
 
@@ -84,7 +88,7 @@ Both bodges from the 28-pin board are required on the v0.2 32-pin board:
 | 1 | YM2149 | DIP-40, 0.6" | U_YM |
 | 5 | 0.1uF | Axial, 7.62 mm pitch | C_AMP, C_GAL, C_LATCH, C_ROM, C_YM |
 | 2 | 10uF | Axial, 7.62 mm pitch | C_AUDIO_OUT, C_RESET |
-| 4 | 10k | Axial, 7.62 mm pitch | R_BANK0, R_BANK1, R_BANK2, R_BANK3 |
+| 5 | 10k | Axial, 7.62 mm pitch | R_BANK0, R_BANK1, R_BANK2, R_BANK3, R_BANK4 |
 | 1 | 220k | Axial, 7.62 mm pitch | R_RESET |
 | 3 | 1k | Axial, 7.62 mm pitch | R_FB, R_PULL, R_SERIES |
 | 3 | 3k | Axial, 7.62 mm pitch | R_YM_AUDIOA, R_YM_AUDIOB, R_YM_AUDIOC |
@@ -103,4 +107,4 @@ Both bodges from the 28-pin board are required on the v0.2 32-pin board:
 
 ### Banking
 
-`R_BANK0..3` (10 k) pull YM `IOA0-IOA3` high at power-up so the cartridge boots from bank 15 (a mirror of the fixed `$8000-$FFFF` region) before software selects a bank. See Hardware-32pin.md.
+`R_BANK0..4` (10 k) pull YM `IOA0-IOA4` high at power-up so the cartridge boots from bank 31 (a mirror of the fixed `$8000-$FFFF` region) before software selects a bank. See Hardware-32pin.md.

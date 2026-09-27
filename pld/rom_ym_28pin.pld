@@ -1,18 +1,18 @@
 GAL16V8
 ROM_YM
 
-NC A15 A14 A0 HALT RW PHI2 A13 A12 GND
-A11 NC NC NC YMLE PHI2OUT BC1 BDIR ROMCE VCC
+NC HALT RW A0 A11 A12 A13 A14 A15 GND
+PHI2 NC NC NC NC NC ROMCE BC1 BDIR VCC
 
-PHI2OUT = PHI2
 BDIR = /A15 * /A14 * /A13 * /A12 * A11 * /RW * HALT * PHI2
 BC1 = /A15 * /A14 * /A13 * /A12 * A11 * /RW * /A0 * HALT * PHI2
-YMLE = /A15 * /A14 * /A13 * /A12 * A11 * /RW * HALT * PHI2
 /ROMCE = A15 * RW + A14 * RW
 
 DESCRIPTION
 
-Atari 7800 YM2149 Address Decoder.
+Atari 7800 YM2149 Address Decoder (28-pin board, ATF16V8B).
+BDIR directly drives both YM2149 Pin 27 (BDIR) and 74HCT373 Pin 11 (LE).
+Cartridge PHI2 directly drives YM2149 Pin 22 (CLK).
 ROM enabled for reads at $4000-$FFFF (48KB with 27C512, JP1=R, JP2=R).
   $4000-$7FFF reads  -> ROM (16KB window, A14=1, A15=0)
   $8000-$FFFF reads  -> ROM (32KB window, A15=1)

@@ -17,15 +17,13 @@ make logic
 ### PLD Equations (`pld/rom_ym_28pin.pld`)
 
 ```cupl
-PHI2OUT = PHI2
 BDIR = /A15 * /A14 * /A13 * /A12 * A11 * /RW * HALT * PHI2
 BC1  = /A15 * /A14 * /A13 * /A12 * A11 * /RW * /A0 * HALT * PHI2
-YMLE = /A15 * /A14 * /A13 * /A12 * A11 * /RW * HALT * PHI2
 /ROMCE = A15 * RW + A14 * RW
 ```
 
 - **ROM Access (`$4000–$FFFF`)**: Drives `/ROMCE` low on reads (`RW=1`) when `A15=1` or `A14=1`.
-- **YM Registers (`$0800–$0801`)**: Drives control signals (`BDIR`, `BC1`, `YMLE`) during write cycles (`RW=0`) when `A15..A12=0000` and `A11=1`.
+- **YM Registers (`$0800–$0801`)**: Drives control signals (`BDIR`, `BC1`) during write cycles (`RW=0`) when `A15..A12=0000` and `A11=1`. `BDIR` also drives 74HCT373 Pin 11 (`LE`).
 
 ---
 
@@ -51,14 +49,16 @@ graph TD
         JP2[JP2 Jumper]
     end
 
-    Bus -->|A15-A11, A0, R/W, PHI2, HALT| GAL
+    Bus -->|A15-A11, A0, R/W, HALT| GAL
+    Phi2 -->|PHI2| GAL
+    Phi2 -->|PHI2 CLK| YM
     Bus -->|D0-D7| Latch
     Bus -->|D0-D7| ROM
     Bus -->|A0-A13| ROM
 
     GAL -->|ROM_CE| ROM
-    GAL -->|YM_LE| Latch
-    GAL -->|BDIR, BC1, PHI2OUT| YM
+    GAL -->|BDIR| Latch
+    GAL -->|BDIR, BC1| YM
 
     Latch -->|DA0-DA7| YM
     JP1 -->|Pin 1 VPP/A15| ROM
@@ -76,22 +76,21 @@ graph TD
 
 | Pin | Signal | Source / Destination |
 | :--- | :--- | :--- |
-| 1 | NC | Unused |
-| 2 | **A15** | 7800 Address Bus (Cart Pin 17 / JP1 Right) |
-| 3 | **A14** | 7800 Address Bus (Cart Pin 16 / JP2 Right) |
+| 1 | NC | Unused (Dedicated Clock pin left unconnected) |
+| 2 | **HALT** | 7800 Maria Halt Signal (Cart Pin 2) |
+| 3 | **R/W** | 7800 CPU R/W Line (Cart Pin 1) |
 | 4 | **A0** | 7800 Address Bus (Cart Pin 26 / ROM Pin 10) |
-| 5 | **HALT** | 7800 Maria Halt Signal (Cart Pin 2) |
-| 6 | **R/W** | 7800 CPU R/W Line (Cart Pin 1) |
-| 7 | **PHI2** | 7800 CPU Clock (Cart Pin 32) |
-| 8 | **A13** | 7800 Address Bus (Cart Pin 15 / ROM Pin 26) |
-| 9 | **A12** | 7800 Address Bus (Cart Pin 8 / ROM Pin 2) |
+| 5 | **A11** | 7800 Address Bus (Cart Pin 10 / ROM Pin 23) |
+| 6 | **A12** | 7800 Address Bus (Cart Pin 8 / ROM Pin 2) |
+| 7 | **A13** | 7800 Address Bus (Cart Pin 15 / ROM Pin 26) |
+| 8 | **A14** | 7800 Address Bus (Cart Pin 16 / JP2 Right) |
+| 9 | **A15** | 7800 Address Bus (Cart Pin 17 / JP1 Right) |
 | 10 | GND | Ground |
-| 11 | **A11** | 7800 Address Bus (Cart Pin 10 / ROM Pin 23) |
-| 15 | **YM_LE** | Latch Enable → 74HCT373 Pin 11 |
-| 16 | **PHI2OUT** | Buffered Clock → U_YM Pin 22 |
-| 17 | **BC1** | → U_YM Pin 29 |
-| 18 | **BDIR** | → U_YM Pin 27 |
-| 19 | **!ROM_CE** | → U_ROM Pin 20 (/CE) |
+| 11 | **PHI2** | 7800 CPU Clock (Cart Pin 32) |
+| 12–16 | NC | Unused macrocells |
+| 17 | **!ROM_CE** | → U_ROM Pin 20 (/CE) |
+| 18 | **BC1** | → U_YM Pin 29 |
+| 19 | **BDIR** | → U_YM Pin 27 & 74HCT373 Pin 11 (`LE`) |
 | 20 | VCC | +5V |
 
 ### 27C256 EPROM (28-Pin DIP, 32KB ROM)
@@ -99,15 +98,15 @@ graph TD
 | Pin (Left Side) | Signal | Pin (Right Side) | Signal |
 | :---: | :--- | :---: | :--- |
 | **1** | **VPP** *(to JP1 Center pad)* | **28** | **VCC** (+5V) |
-| **2** | **A12** *(Cart Pin 8 / GAL Pin 9)* | **27** | **A14** *(to JP2 Center pad)* |
-| **3** | **A7** *(Cart Pin 19)* | **26** | **A13** *(Cart Pin 15 / GAL Pin 8)* |
+| **2** | **A12** *(Cart Pin 8 / GAL Pin 6)* | **27** | **A14** *(to JP2 Center pad)* |
+| **3** | **A7** *(Cart Pin 19)* | **26** | **A13** *(Cart Pin 15 / GAL Pin 4)* |
 | **4** | **A6** *(Cart Pin 20)* | **25** | **A8** *(Cart Pin 12)* |
 | **5** | **A5** *(Cart Pin 21)* | **24** | **A9** *(Cart Pin 11)* |
-| **6** | **A4** *(Cart Pin 22)* | **23** | **A11** *(Cart Pin 10 / GAL Pin 11)* |
+| **6** | **A4** *(Cart Pin 22)* | **23** | **A11** *(Cart Pin 10 / GAL Pin 5)* |
 | **7** | **A3** *(Cart Pin 23)* | **22** | **!OE** *(Output Enable → GND)* |
 | **8** | **A2** *(Cart Pin 24)* | **21** | **A10** *(Cart Pin 9)* |
-| **9** | **A1** *(Cart Pin 25)* | **20** | **!CE** *(Chip Enable ← GAL Pin 19)* |
-| **10** | **A0** *(Cart Pin 26 / GAL Pin 4)* | **19** | **D7** *(Cart Pin 7 / Latch Pin 18)* |
+| **9** | **A1** *(Cart Pin 25)* | **20** | **!CE** *(Chip Enable ← GAL Pin 17)* |
+| **10** | **A0** *(Cart Pin 26 / GAL Pin 7)* | **19** | **D7** *(Cart Pin 7 / Latch Pin 18)* |
 | **11** | **D0** *(Cart Pin 27 / Latch Pin 3)* | **18** | **D6** *(Cart Pin 6 / Latch Pin 17)* |
 | **12** | **D1** *(Cart Pin 28 / Latch Pin 4)* | **17** | **D5** *(Cart Pin 5 / Latch Pin 14)* |
 | **13** | **D2** *(Cart Pin 29 / Latch Pin 7)* | **16** | **D4** *(Cart Pin 4 / Latch Pin 13)* |
@@ -115,14 +114,14 @@ graph TD
 
 ### 74HCT373 Octal Latch (`U_LATCH`)
 
-The YM2149 uses a multiplexed address/data bus (`DA0–DA7`). When the CPU writes to `$0800/$0801`, the PLD asserts `YM_LE` high to store data bus lines `D0–D7` into the latch to drive `DA0–DA7`.
+The YM2149 uses a multiplexed address/data bus (`DA0–DA7`). When the CPU writes to `$0800/$0801`, the PLD asserts `BDIR` high to store data bus lines `D0–D7` into the latch to drive `DA0–DA7`.
 
 | Latch Pin | Signal | Connection |
 | :--- | :--- | :--- |
 | 1 | ~OE | Ground |
 | 2–9 | Q0–Q7 | U_YM DA0–DA7 |
 | 3–18 | D0–D7 | 7800 Data Bus D0–D7 |
-| 11 | LE | PLD Pin 15 (`YM_LE`) |
+| 11 | LE | PLD Pin 19 (`BDIR`) |
 | 20 | VCC | +5V |
 | 10 | GND | Ground |
 
@@ -130,9 +129,9 @@ The YM2149 uses a multiplexed address/data bus (`DA0–DA7`). When the CPU write
 
 | YM Pin | Signal | Connection |
 | :--- | :--- | :--- |
-| 22 | CLOCK | PHI2OUT (PLD Pin 16) |
-| 27 | BDIR | PLD Pin 18 |
-| 29 | BC1 | PLD Pin 17 |
+| 22 | CLOCK | Direct PHI2 (Cart Pin 32) |
+| 27 | BDIR | PLD Pin 19 |
+| 29 | BC1 | PLD Pin 18 |
 | 28 | BC2 | VCC |
 | 25 | A8 | VCC |
 | 24 | !A9 | GND |

@@ -42,6 +42,7 @@ Technical reference and software protocol for bank-switched ROM on the 32-pin bo
 Bank switching uses two writes to the YM2149 registers at `$0800` / `$0801`.
 
 ### Step 1: Enable Port A Output (Register 7)
+
 Bit 6 of Register 7 sets Port A direction (`1 = output`). Preserve bits 0–5 (tone/noise enables):
 
 ```ca65
@@ -55,6 +56,7 @@ Bit 6 of Register 7 sets Port A direction (`1 = output`). Preserve bits 0–5 (t
 > Any routine updating Register 7 (Mixer) must keep Bit 6 high (`AY_IOA_OUTPUT = %01000000`). Clearing Bit 6 reverts Port A to input mode, resetting the `$4000–$7FFF` window to Bank 15 via the pull-ups.
 
 ### Step 2: Select Bank Number (Register 14)
+
 Write the target 16 KB bank number ($0..13$) to Register 14 (Port A data):
 
 ```ca65
@@ -70,35 +72,42 @@ Write the target 16 KB bank number ($0..13$) to Register 14 (Port A data):
 
 ## Hardware Architecture
 
-* **Bank Latch:** YM2149 Port A pins `IOA0–IOA3` store the 4-bit bank index.
-* **Address Multiplexer:** ATF22V10 PLD (`U_GAL`) generates ROM upper address lines `ROMA14–ROMA17`.
-* **Power-On Reset:** At reset, YM Port A defaults to input (Hi-Z). Four 10 kΩ pull-up resistors (`R_BANK0–R_BANK3`) pull `IOA0–IOA3` high, defaulting `$4000–$7FFF` to Bank 15 (a mirror of the fixed region) for safe boot.
+* **Bank Latch:** YM2149 Port A pins `IOA0–IOA4` store the 5-bit bank index.
+* **Address Multiplexer:** ATF22V10 PLD (`U_GAL`) generates ROM upper address lines `ROMA14–ROMA18`.
+* **Power-On Reset:** At reset, YM Port A defaults to input (Hi-Z). Five 10 kΩ pull-up resistors (`R_BANK0–R_BANK4`) pull `IOA0–IOA4` high, defaulting `$4000–$7FFF` to Bank 31 (a mirror of the fixed region) for safe boot.
 
 ### PLD Equations (`pld/rom_ym_32pin.pld`)
 
 ```cupl
+BDIR = /A15 * /A14 * /A13 * /A12 * A11 * /RW * HALT * PHI2
+BC1  = /A15 * /A14 * /A13 * /A12 * A11 * /RW * /A0 * HALT * PHI2
+
 /ROMCE  = A15 * RW  +  /A15 * A14 * RW
 ROMA14  = A15 * A14 +  /A15 * IOA0
 ROMA15  = A15 + IOA1
 ROMA16  = A15 + IOA2
 ROMA17  = A15 + IOA3
+ROMA18  = A15 + IOA4
 ```
 
-* **When `A15 = 1` (`$8000–$FFFF`):** `ROMA15–ROMA17` are forced high; `ROMA14` follows console `A14`. The fixed bank is locked to Banks 14 & 15.
-* **When `A15 = 0` and `A14 = 1` (`$4000–$7FFF`):** `ROMA14–ROMA17` directly follow `IOA0–IOA3`, selecting Bank 0–13.
+* **When `A15 = 1` (`$8000–$FFFF`):** `ROMA15–ROMA18` are forced high; `ROMA14` follows console `A14`. The fixed bank is locked to Banks 30 & 31 (the top 32KB of ROM).
+* **When `A15 = 0` and `A14 = 1` (`$4000–$7FFF`):** `ROMA14–ROMA18` directly follow `IOA0–IOA4`, selecting Banks 0–29.
 
 ---
 
 ## Hardware Capacity Reference
 
-The 4 bank lines (`IOA0–IOA3`) address 16 banks of 16 KB each (256 KB total):
+The 5 bank lines (`IOA0–IOA4`) address up to 32 banks of 16 KB each (512 KB total):
 
-| EPROM Part | Total ROM | Switched Window ($4000–$7FFF) | Fixed Code ($8000–$FFFF) | Notes |
+| EPROM / Flash Part | Total ROM | Switched Window ($4000–$7FFF) | Fixed Code ($8000–$FFFF) | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **AT27C010 / SST39SF010** | 128 KB | Banks 0–5 (6 × 16 KB = 96 KB) | Banks 6 & 7 (32 KB) | `IOA3` unused |
-| **AT27C020 / SST39SF020** | **256 KB** | **Banks 0–13 (14 × 16 KB = 224 KB)** | **Banks 14 & 15 (32 KB)** | **Full standard capacity** |
-| **AT27C040 / SST39SF040** | 512 KB | Banks 0–13 (14 × 16 KB = 224 KB) | Banks 14 & 15 (32 KB) | Pin 31 tied to VCC; upper 256 KB active |
+| **AT27C010 / SST39SF010** | 128 KB | Banks 0–5 (6 × 16 KB = 96 KB) | Banks 6 & 7 (32 KB) | `IOA3–IOA4` unused |
+| **AT27C020 / SST39SF020** | 256 KB | Banks 0–13 (14 × 16 KB = 224 KB) | Banks 14 & 15 (32 KB) | `IOA4` unused |
+| **AT27C040 / SST39SF040** | **512 KB** | **Banks 0–29 (30 × 16 KB = 480 KB)** | **Banks 30 & 31 (32 KB)** | **Full maximum capacity** (DIP JP_A18=512K; PLCC auto) |
 
-### 512 KB Expansion Roadmap
-Future board and logic revisions will unlock full 512 KB capacity (thirty 16 KB switched data banks + 32 KB fixed code = 512 KB total) by updating the PLD and routing a 5th YM I/O pin (`IOA4`) to generate `ROMA18` into ROM Pin 31.
+### Dual-Footprint & Jumper Configuration (512 KB)
 
+- **PLCC-32 Socket (`U_ROM_PLCC`)**: For `SST39SF` Flash. Pin 1 is hardwired to `ROMA18`, Pin 31 is tied to $V_{CC}$ (`WE#` disable). Auto-detects 128KB, 256KB, and 512KB Flash with zero jumpers!
+* **DIP-32 Socket (`U_ROM`)**: Solder jumper `JP_A18` selects Pin 31:
+  * Bridge 1–2 ($V_{CC}$): 128KB/256KB UV EPROMs (`27C010`/`27C020`) and 256KB fallback for `27C040`.
+  * Bridge 2–3 (`ROMA18`): Full 512KB UV EPROM (`27C040`).

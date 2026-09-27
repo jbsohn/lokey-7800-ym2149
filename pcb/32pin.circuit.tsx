@@ -6,6 +6,7 @@ import { Latch74HCT373 } from "./74HCT373";
 import { YM2149 } from "./YM2149";
 import { PolarizedCap } from "./PolarizedCap";
 import { YmResetAmp } from "./YmResetAmp";
+import { SolderJumper } from "./SolderJumper";
 
 export default () => (
   <board
@@ -240,15 +241,15 @@ export default () => (
           IOA1: "net.YM_IOA1",
           IOA2: "net.YM_IOA2",
           IOA3: "net.YM_IOA3",
+          IOA4: "net.YM_IOA4",
           ROM_A14: "net.ROM_A14",
           ROM_A15: "net.ROM_A15",
           ROM_A16: "net.ROM_A16",
           ROM_A17: "net.ROM_A17",
+          ROM_A18: "net.ROM_A18",
           ROM_CE: "net.ROM_CE",
           BDIR: "net.BDIR",
           BC1: "net.BC1",
-          PHI2OUT: "net.PHI2OUT",
-          YM_LE: "net.YM_LE",
         }}
       />
       <capacitor
@@ -292,7 +293,7 @@ export default () => (
           A15: "net.ROM_A15",    // pin 3:  from GAL (forced high or bank bit 1)
           A16: "net.ROM_A16",    // pin 2:  from GAL (forced high or bank bit 2)
           A17: "net.ROM_A17",    // pin 30: from GAL (forced high or bank bit 3)
-          A18: "net.VCC",        // pin 31: PGM high (27C010/020) / A18 high = top half (27C040)
+          A18: "net.ROM_PIN31",  // pin 31: from JP_A18 (VCC for 128K/256K, ROM_A18 for 512K EPROM)
           D0: "net.D0", D1: "net.D1", D2: "net.D2", D3: "net.D3", D4: "net.D4",
           D5: "net.D5", D6: "net.D6", D7: "net.D7",
         }}
@@ -308,7 +309,7 @@ export default () => (
         pcbRotation={90}
         connections={{
           VCC: "net.VCC",
-          VPP: "net.VCC",        // pin 1: VCC (read mode / Flash A18 high)
+          VPP: "net.ROM_A18",    // pin 1: Flash A18 (auto 512K on Flash; NC on 128K/256K)
           GND: "net.GND",
           OE: "net.GND",
           CE: "net.ROM_CE",
@@ -338,13 +339,29 @@ export default () => (
           pin2: "net.GND",
         }}
       />
+      {/* Solder jumper to select DIP pin 31 function: VCC (128K/256K EPROMs) vs ROM_A18 (512K 27C040) */}
+      <SolderJumper
+        name="JP_A18"
+        pcbX="21mm"
+        pcbY="-11mm"
+        schX={4}
+        schY={-6}
+        label="JP_A18"
+        labelL="VCC"
+        labelR="512K"
+        connections={{
+          L: "net.VCC",
+          C: "net.ROM_PIN31",
+          R: "net.ROM_A18",
+        }}
+      />
       {/* Bank pull-ups on the GAL's IOA inputs: power-on bank = 15 (a mirror
           of the fixed region) while YM IOA is Hi-Z (input mode) */}
       <resistor
         name="R_BANK0"
         resistance="10k"
         footprint="axial_p7.62mm"
-        pcbX="10mm"
+        pcbX="10.0mm"
         pcbY="0mm"
         pcbRotation={90}
         layer="bottom"
@@ -359,7 +376,7 @@ export default () => (
         name="R_BANK1"
         resistance="10k"
         footprint="axial_p7.62mm"
-        pcbX="13mm"
+        pcbX="12.3mm"
         pcbY="0mm"
         pcbRotation={90}
         layer="bottom"
@@ -374,7 +391,7 @@ export default () => (
         name="R_BANK2"
         resistance="10k"
         footprint="axial_p7.62mm"
-        pcbX="16mm"
+        pcbX="14.6mm"
         pcbY="0mm"
         pcbRotation={90}
         layer="bottom"
@@ -389,7 +406,7 @@ export default () => (
         name="R_BANK3"
         resistance="10k"
         footprint="axial_p7.62mm"
-        pcbX="19mm"
+        pcbX="16.9mm"
         pcbY="0mm"
         pcbRotation={90}
         layer="bottom"
@@ -398,6 +415,21 @@ export default () => (
         connections={{
           pin1: "net.VCC",
           pin2: "net.YM_IOA3",
+        }}
+      />
+      <resistor
+        name="R_BANK4"
+        resistance="10k"
+        footprint="axial_p7.62mm"
+        pcbX="19.2mm"
+        pcbY="0mm"
+        pcbRotation={90}
+        layer="bottom"
+        schX={7}
+        schY={-10}
+        connections={{
+          pin1: "net.VCC",
+          pin2: "net.YM_IOA4",
         }}
       />
     </group>
@@ -417,7 +449,7 @@ export default () => (
           VCC: "net.VCC",
           GND: "net.GND",
           OE: "net.GND",
-          LE: "net.YM_LE",
+          LE: "net.BDIR",
           D0: "net.D0",
           D1: "net.D1",
           D2: "net.D2",
@@ -469,7 +501,7 @@ export default () => (
           GND: "net.GND",
           DA0: "net.DA0", DA1: "net.DA1", DA2: "net.DA2", DA3: "net.DA3",
           DA4: "net.DA4", DA5: "net.DA5", DA6: "net.DA6", DA7: "net.DA7",
-          CLK: "net.PHI2OUT",
+          CLK: "net.PHI2",
           BDIR: "net.BDIR",
           BC1: "net.BC1",
           RESET: "net.RESET_DELAYED",
@@ -479,6 +511,7 @@ export default () => (
           IOA1: "net.YM_IOA1",
           IOA2: "net.YM_IOA2",
           IOA3: "net.YM_IOA3",
+          IOA4: "net.YM_IOA4",
           ANALOG_A: "net.ANALOG_A",
           ANALOG_B: "net.ANALOG_B",
           ANALOG_C: "net.ANALOG_C",
