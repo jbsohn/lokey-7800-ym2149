@@ -14,6 +14,28 @@ export const ATARI_7800_CONNECTOR_OUTLINE = [
   { x: "-23.5mm", y: "-40mm" },        // Bottom-left
 ];
 
+export const ATARI_7800_BOARD_OUTLINE = [
+  { x: "-30mm", y: "40mm" },         // Top-left (±30mm upper body)
+  { x: "30mm", y: "40mm" },          // Top-right
+  { x: "30mm", y: "9.5mm" },         // Right, step in at shoulder top
+  { x: "20.64mm", y: "9.5mm" },      // Right shoulder recess (2.86mm from ±23.5mm, matching cart case)
+  { x: "20.64mm", y: "-0.63mm" },    // Right mid-notch top (rail grip slot)
+  { x: "19.05mm", y: "-0.63mm" },
+  { x: "19.05mm", y: "-5.08mm" },
+  { x: "20.64mm", y: "-5.08mm" },    // Right mid-notch bottom
+  { x: "20.64mm", y: "-7mm" },       // Right shoulder bottom
+  { x: "23.5mm", y: "-7mm" },        // Right back to connector width
+  ...ATARI_7800_CONNECTOR_OUTLINE,
+  { x: "-23.5mm", y: "-7mm" },       // Left back to connector width
+  { x: "-20.64mm", y: "-7mm" },      // Left shoulder bottom
+  { x: "-20.64mm", y: "-5.08mm" },   // Left mid-notch bottom (rail grip slot)
+  { x: "-19.05mm", y: "-5.08mm" },
+  { x: "-19.05mm", y: "-0.63mm" },
+  { x: "-20.64mm", y: "-0.63mm" },   // Left mid-notch top
+  { x: "-20.64mm", y: "9.5mm" },     // Left shoulder top
+  { x: "-30mm", y: "9.5mm" },        // Left step out to upper body
+];
+
 const Atari7800EdgeConnector = (props: ChipProps) => {
   const padWidth = 2;
   const padHeight = 7;
@@ -60,7 +82,6 @@ const Atari7800EdgeConnector = (props: ChipProps) => {
       <footprint insertionDirection="from_bottom">
         {frontPads.map(pad => (
           <smtpad
-            key={`front-${pad.num}`}
             shape="rect"
             width={padWidth}
             height={padHeight}
@@ -72,7 +93,6 @@ const Atari7800EdgeConnector = (props: ChipProps) => {
         ))}
         {backPads.map(pad => (
           <smtpad
-            key={`back-${pad.num}`}
             shape="rect"
             width={padWidth}
             height={padHeight}

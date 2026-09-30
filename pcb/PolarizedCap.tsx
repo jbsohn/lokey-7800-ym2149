@@ -1,4 +1,4 @@
-import { type CapacitorProps } from "tscircuit";
+import type { ComponentProps } from "react";
 
 // Axial electrolytic capacitor with "+" / "-" polarity silkscreen.
 //
@@ -6,7 +6,7 @@ import { type CapacitorProps } from "tscircuit";
 // pin2 = "-" (cathode). The marker X offsets (-/+3.81 mm) sit directly over
 // the two leads of the axial 7.62 mm (0.3") pitch footprint used on both
 // boards; if the lead pitch ever changes, update these offsets to match.
-export const PolarizedCap = (props: CapacitorProps) => (
+export const PolarizedCap = (props: ComponentProps<"capacitor">) => (
   <capacitor {...props} polarized>
     <silkscreentext
       text="+"

@@ -6,7 +6,7 @@
 //
 // --check stops after the DRC gate (writes to build/check, no gerbers).
 import { spawnSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
@@ -19,16 +19,32 @@ process.chdir(dirname(fileURLToPath(import.meta.url)));
 const CHECK_ONLY = process.argv.includes("--check");
 const entry = process.argv.slice(2).find((a) => !a.startsWith("--"));
 if (!entry) {
-  console.error("usage: FREEROUTING_JAR=<freerouting.jar> bun build-pcb.ts <board>.circuit.tsx [--check]");
+  console.error("usage: bun build-pcb.ts <board>.circuit.tsx [--check]");
   process.exit(1);
 }
 
-// freerouting: `java -jar $FREEROUTING_JAR`, or a `freerouting` executable ($FREEROUTING_BIN) on PATH.
+// Locate freerouting jar or executable, with automatic discovery for local tools and macOS JVMs
 function freeroutingCommand(): { cmd: string; args: string[] } {
-  const jar = process.env.FREEROUTING_JAR;
+  const javaBin = (() => {
+    if (process.env.JAVA_BIN) return process.env.JAVA_BIN;
+    if (process.env.JAVA_HOME && existsSync(join(process.env.JAVA_HOME, "bin/java"))) {
+      return join(process.env.JAVA_HOME, "bin/java");
+    }
+    const macJvms = [
+      "/Library/Java/JavaVirtualMachines/microsoft-25.jdk/Contents/Home/bin/java",
+      "/opt/homebrew/opt/openjdk/bin/java",
+    ];
+    for (const p of macJvms) {
+      if (existsSync(p)) return p;
+    }
+    return "java";
+  })();
+
+  const defaultJar = join(dirname(fileURLToPath(import.meta.url)), ".tools", "freerouting-2.4.1.jar");
+  const jar = process.env.FREEROUTING_JAR ?? (existsSync(defaultJar) ? defaultJar : undefined);
   if (jar) {
     if (!existsSync(jar)) throw new Error(`FREEROUTING_JAR is set but not found: ${jar}`);
-    return { cmd: "java", args: ["-Djava.awt.headless=true", "-jar", jar] };
+    return { cmd: javaBin, args: ["-Djava.awt.headless=true", "-jar", jar] };
   }
   const bin = process.env.FREEROUTING_BIN ?? "freerouting";
   if (spawnSync("which", [bin], { stdio: "ignore" }).status === 0 || existsSync(bin)) return { cmd: bin, args: [] };
@@ -166,7 +182,12 @@ function fixBoard() {
   }
 
   let zones = 0;
-  for (const z of pcb.zones) if (z.netName === "GND") (z.minThickness = GND_ZONE_MIN_THICKNESS_MM), zones++;
+  for (const z of pcb.zones) {
+    if (z.netName === "GND") {
+      z.minThickness = GND_ZONE_MIN_THICKNESS_MM;
+      zones++;
+    }
+  }
 
   if (pcb.titleBlock) pcb.titleBlock.rev = REVISION;
   else pcb.titleBlock = new TitleBlock({ rev: REVISION });
@@ -274,6 +295,37 @@ function drcGate() {
   console.log("  DRC gate passed (no shorts, no real unconnected items, no clearance violations)");
 }
 
+const REQUIRED_FAB_SUFFIXES = [
+  "-F_Cu.gtl",
+  "-B_Cu.gbl",
+  "-F_Mask.gts",
+  "-B_Mask.gbs",
+  "-F_Silkscreen.gto",
+  "-B_Silkscreen.gbo",
+  "-Edge_Cuts.gm1",
+  ".drl",
+  "-job.gbrjob",
+] as const;
+
+function verifyFabricationOutputs(gerberDir: string) {
+  const files = readdirSync(gerberDir);
+  const missing: string[] = [];
+  const empty: string[] = [];
+
+  for (const suffix of REQUIRED_FAB_SUFFIXES) {
+    const match = files.find((f) => f.endsWith(suffix));
+    if (!match) missing.push(suffix);
+    else if (statSync(join(gerberDir, match)).size === 0) empty.push(match);
+  }
+
+  if (missing.length || empty.length) {
+    const errs: string[] = [];
+    if (missing.length) errs.push(`Missing layer(s): ${missing.join(", ")}`);
+    if (empty.length) errs.push(`Empty layer(s): ${empty.join(", ")}`);
+    throw new Error(`Fabrication output verification failed:\n  ${errs.join("\n  ")}`);
+  }
+}
+
 // --- Fabrication outputs ----------------------------------------------------------------
 async function fabricate() {
   console.log("Exporting Gerbers and drill files...");
@@ -283,19 +335,25 @@ async function fabricate() {
   kicad(["pcb", "export", "drill", "-o", GERBER_DIR, PCB]);
 
   const jobPath = join(GERBER_DIR, "index-job.gbrjob");
-  if (existsSync(jobPath)) {
-    const job = JSON.parse(readFileSync(jobPath, "utf8"));
-    job.GeneralSpecs.Finish = FINISH;
-    job.GeneralSpecs.ProjectId.Revision = REVISION;
-    writeFileSync(jobPath, JSON.stringify(job, null, 2));
-    console.log(`  Set Finish: ${FINISH}, Revision: ${REVISION}`);
-  } else console.warn("Warning: gbrjob not found");
+  if (!existsSync(jobPath)) throw new Error(`Gerber job file was not created: ${jobPath}`);
+  const job = JSON.parse(readFileSync(jobPath, "utf8"));
+  job.GeneralSpecs.Finish = FINISH;
+  job.GeneralSpecs.ProjectId.Revision = REVISION;
+  writeFileSync(jobPath, JSON.stringify(job, null, 2));
+  console.log(`  Set Finish: ${FINISH}, Revision: ${REVISION}`);
+
+  verifyFabricationOutputs(GERBER_DIR);
 
   const zip = new JSZip();
-  for (const f of readdirSync(GERBER_DIR).sort()) zip.file(f, readFileSync(join(GERBER_DIR, f)));
+  const fabFiles = readdirSync(GERBER_DIR).sort();
+  for (const f of fabFiles) zip.file(f, readFileSync(join(GERBER_DIR, f)));
+  const zipBuffer = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
+  if (zipBuffer.length < 5000) {
+    throw new Error(`Generated gerber zip is suspiciously small (${zipBuffer.length} bytes); aborting`);
+  }
   const zipPath = join(BUILD, "gerbers.zip");
-  writeFileSync(zipPath, await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
-  console.log(`  Zipped Gerber files to ${zipPath}`);
+  writeFileSync(zipPath, zipBuffer);
+  console.log(`  Zipped ${fabFiles.length} verified Gerber files to ${zipPath} (${zipBuffer.length} bytes)`);
 
   // Board-specific copies so downstream targets (previews, CI artifacts) never grab another board's outputs.
   copyFileSync(PCB, join(BUILD, `index-${board}.kicad_pcb`));

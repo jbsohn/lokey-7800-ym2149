@@ -103,7 +103,6 @@ export const ROM_PLCC32 = (props: ChipProps) => (
     <footprint>
       {PLCC32_PADS.map((pad) => (
         <smtpad
-          key={pad.num}
           shape="rect"
           pcbX={pad.x}
           pcbY={pad.y}

@@ -30,7 +30,7 @@ function fixUnportedPinIds(dsn: string, circuitJson: any[]): string {
     if (!id || !comp) continue;
     const dx = (Number(pad.x.toFixed(3)) - comp.center.x) * 1e3;
     const dy = (Number(pad.y.toFixed(3)) - comp.center.y) * 1e3;
-    const image = new RegExp(`\\n    \\(image "[^"]*~${comp.source_component_id}:[^"]*"\\n(?:.|\\n)*?\\n    \\)`);
+    const image = new RegExp(`\\n {4}\\(image "[^"]*~${comp.source_component_id}:[^"]*"\\n[\\s\\S]*?\\n {4}\\)`);
     dsn = dsn.replace(image, (block) =>
       block.replace(
         /\(pin(\s+\S+\s+(?:\(rotate\s+-?\d+\)\s+)?)(\S+)\s+(-?[\d.]+)\s+(-?[\d.]+)\)/g,
@@ -45,7 +45,7 @@ function fixUnportedPinIds(dsn: string, circuitJson: any[]): string {
 // both pins already belong to a real net, so those pins sit in two nets at once.
 // Drop the duplicates (the real nets keep the connectivity).
 function dropDuplicateTraceNets(dsn: string): string {
-  const netRe = /\n    \(net\s+"?([^"\s]+)"?\s*\n\s*\(pins([^)]*)\)\s*\n\s*\)/g;
+  const netRe = /\n {4}\(net\s+"?([^"\s]+)"?\s*\n\s*\(pins([^)]*)\)\s*\n\s*\)/g;
   const nets = [...dsn.matchAll(netRe)].map((m) => ({ text: m[0], name: m[1], pins: m[2].trim().split(/\s+/) }));
   const realPins = new Set(nets.filter((n) => !n.name.startsWith("Net-(")).flatMap((n) => n.pins));
   for (const net of nets) {
@@ -61,7 +61,7 @@ function dropDuplicateTraceNets(dsn: string): string {
 function addUnconnectedPinNets(dsn: string): string {
   const used = new Set([...dsn.matchAll(/\(pins([^)]*)\)/g)].flatMap((m) => m[1].trim().split(/\s+/)));
   const imagePins = new Map<string, string[]>();
-  for (const m of dsn.matchAll(/\n    \(image ("[^"]*"|\S+)\n((?:.|\n)*?)\n    \)/g)) {
+  for (const m of dsn.matchAll(/\n {4}\(image ("[^"]*"|\S+)\n([\s\S]*?)\n {4}\)/g)) {
     const pins = [...m[2].matchAll(/\(pin\s+\S+\s+(?:\(rotate\s+-?\d+\)\s+)?(\S+)\s+-?[\d.]+\s+-?[\d.]+\)/g)].map((p) => p[1]);
     imagePins.set(m[1], pins);
   }
@@ -73,7 +73,7 @@ function addUnconnectedPinNets(dsn: string): string {
       }
     }
   }
-  return extra.length ? dsn.replace(/\n    \(class /, `\n${extra.join("\n")}\n    (class `) : dsn;
+  return extra.length ? dsn.replace(/\n {4}\(class /, `\n${extra.join("\n")}\n    (class `) : dsn;
 }
 
 function boardOutline(circuitJson: any[]): { x: number; y: number }[] {
@@ -107,7 +107,7 @@ function patchDsn(dsn: string, circuitJson: any[]): string {
     .filter((e) => e.type === "pcb_copper_pour" && netNames.has(e.source_net_id))
     .map((e) => `    (plane ${netNames.get(e.source_net_id)} (polygon ${e.layer === "top" ? "F.Cu" : "B.Cu"} 0  ${ring}))`)
     .join("\n");
-  if (planes) dsn = dsn.replace(/(\(boundary[\s\S]*?\n    \)\n)/, `$1${planes}\n`);
+  if (planes) dsn = dsn.replace(/(\(boundary[\s\S]*?\n {4}\)\n)/, `$1${planes}\n`);
 
   // tscircuit's default 0.15mm clearance leaves the D3 connector finger unroutable
   // (0.54mm gap to its neighbour); 0.2mm, the same as the KiCad flow, routes fully.
@@ -120,7 +120,7 @@ type DsnPin = { id: string; x: number; y: number };
 
 const parseImages = (dsn: string) =>
   new Map(
-    [...dsn.matchAll(/\n    \(image ("[^"]*"|\S+)\n((?:.|\n)*?)\n    \)/g)].map((m) => [
+    [...dsn.matchAll(/\n {4}\(image ("[^"]*"|\S+)\n([\s\S]*?)\n {4}\)/g)].map((m) => [
       m[1],
       [...m[2].matchAll(/\(pin\s+\S+\s+(?:\(rotate\s+-?\d+\)\s+)?(\S+)\s+(-?[\d.]+)\s+(-?[\d.]+)\)/g)].map(
         (p): DsnPin => ({ id: p[1], x: Number(p[2]), y: Number(p[3]) }),
@@ -168,7 +168,7 @@ export function verifyDsn(dsn: string, circuitJson: any[]): void {
       continue;
     }
     const hints: string[] = sourcePorts.get(pcbPorts.get(pad.pcb_port_id)?.source_port_id)?.port_hints ?? pad.port_hints ?? [];
-    const id = hints.find((h) => /^\d+$/.test(h)) ?? pad.port_hints?.find((h: string) => /^\d+$/.test(h));
+    const id = hints.find((h) => /^\d+$/.test(h));
     if (!id) {
       problems.push(`pad at (${pad.x}, ${pad.y}) of ${comp.source_component_id} has no numeric pin id`);
       continue;
