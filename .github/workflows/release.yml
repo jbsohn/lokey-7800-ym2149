@@ -64,10 +64,11 @@ jobs:
 
       - name: Collect 28pin gerbers and previews
         run: |
-          cp pcb/build/gerbers.zip gerbers-28pin.zip
-          cp build/pcb_front_28pin.png pcb_front_28pin.png
-          cp build/pcb_back_28pin.png pcb_back_28pin.png
-          cp build/pcb_3d_28pin.png pcb_3d_28pin.png
+          cp pcb/build/gerbers-28pin.zip gerbers-28pin.zip
+          cp pcb/build/pcb_front_28pin.png pcb_front_28pin.png
+          cp pcb/build/pcb_back_28pin.png pcb_back_28pin.png
+          cp pcb/build/pcb_3d_28pin.png pcb_3d_28pin.png
+          cp pcb/build/schematic-28pin.png schematic-28pin.png
 
       - name: Build 32pin PCB
         run: |
@@ -77,10 +78,11 @@ jobs:
 
       - name: Collect 32pin gerbers and previews
         run: |
-          cp pcb/build/gerbers.zip gerbers-32pin.zip
-          cp build/pcb_front_32pin.png pcb_front_32pin.png
-          cp build/pcb_back_32pin.png pcb_back_32pin.png
-          cp build/pcb_3d_32pin.png pcb_3d_32pin.png
+          cp pcb/build/gerbers-32pin.zip gerbers-32pin.zip
+          cp pcb/build/pcb_front_32pin.png pcb_front_32pin.png
+          cp pcb/build/pcb_back_32pin.png pcb_back_32pin.png
+          cp pcb/build/pcb_3d_32pin.png pcb_3d_32pin.png
+          cp pcb/build/schematic-32pin.png schematic-32pin.png
 
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
@@ -95,9 +97,9 @@ jobs:
             pcb_front_32pin.png
             pcb_back_32pin.png
             pcb_3d_32pin.png
-            build/schematic-28pin.png
-            build/schematic-32pin.png
-            build/*.jed
+            schematic-28pin.png
+            schematic-32pin.png
+            pld/build/*.jed
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -113,6 +115,6 @@ jobs:
             pcb_front_32pin.png
             pcb_back_32pin.png
             pcb_3d_32pin.png
-            build/schematic-28pin.png
-            build/schematic-32pin.png
-            build/*.jed
+            schematic-28pin.png
+            schematic-32pin.png
+            pld/build/*.jed

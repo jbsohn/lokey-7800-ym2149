@@ -9,23 +9,23 @@ Technical reference and software protocol for bank-switched ROM on the 32-pin bo
 | 6502 Address | Window Size | Role | Description |
 | :--- | :--- | :--- | :--- |
 | **`$8000–$FFFF`** | 32 KB | Fixed Code Bank | Hardwired to top 32 KB of ROM. Always mapped; vectors and core engine live here. |
-| **`$4000–$7FFF`** | 16 KB | Switched Window | Mapped to selected 16 KB bank (Banks 0–13) via YM Port A. |
+| **`$4000–$7FFF`** | 16 KB | Switched Window | Mapped to selected 16 KB bank (Banks 0–29 on 512KB, or Banks 0–13 on 256KB) via YM Port A. |
 | **`$0800–$0801`** | 2 bytes | YM2149 PSG | `$0800` = Address register, `$0801` = Data register (write-only). |
 
-### Bank Layout (256 KB EPROM / AT27C020)
+### Bank Layout (512 KB EPROM / AT27C040 / SST39SF040)
 
-* **Total ROM capacity:** 256 KB (sixteen 16 KB sectors).
-* **Banks 0–13 (224 KB):** 14 selectable data banks swapped through `$4000–$7FFF`.
-* **Banks 14 & 15 (32 KB):** Fixed code bank mapped at `$8000–$FFFF`.
+* **Total ROM capacity:** 512 KB (thirty-two 16 KB sectors).
+* **Banks 0–29 (480 KB):** 30 selectable data banks swapped through `$4000–$7FFF`.
+* **Banks 30 & 31 (32 KB):** Fixed code bank mapped at `$8000–$FFFF`.
 
 ```
-6502 Address Space               Physical 256KB ROM (AT27C020)
-+------------------+ $FFFF       +-----------------------------+ $3FFFF
-|   Fixed 32KB     |             | Bank 15 (16KB) - Fixed Upper|
-|   Code & Vectors | ----------> +-----------------------------+ $3C000
-|   ($8000-$FFFF)  |             | Bank 14 (16KB) - Fixed Lower|
-+------------------+ $8000       +=============================+ $38000
-|  Switched 16KB   |             | Bank 13 (16KB)              |
+6502 Address Space               Physical 512KB ROM (AT27C040 / SST39SF040)
++------------------+ $FFFF       +-----------------------------+ $7FFFF
+|   Fixed 32KB     |             | Bank 31 (16KB) - Fixed Upper|
+|   Code & Vectors | ----------> +-----------------------------+ $7C000
+|   ($8000-$FFFF)  |             | Bank 30 (16KB) - Fixed Lower|
++------------------+ $8000       +=============================+ $78000
+|  Switched 16KB   |             | Bank 29 (16KB)              |
 |   Data Window    | ---------\  +-----------------------------+
 |   ($4000-$7FFF)  |           \ | ...                         |
 +------------------+ $4000      >+-----------------------------+
@@ -34,6 +34,8 @@ Technical reference and software protocol for bank-switched ROM on the 32-pin bo
 +------------------+ $0000       | Bank  0 (16KB)              |
                                  +-----------------------------+ $00000
 ```
+
+*(Note: On 256 KB ROMs, Banks 0–13 are switched and Banks 14 & 15 are fixed. On 128 KB ROMs, Banks 0–5 are switched and Banks 6 & 7 are fixed.)*
 
 ---
 
@@ -53,16 +55,16 @@ Bit 6 of Register 7 sets Port A direction (`1 = output`). Preserve bits 0–5 (t
 ```
 
 > [!WARNING]
-> Any routine updating Register 7 (Mixer) must keep Bit 6 high (`AY_IOA_OUTPUT = %01000000`). Clearing Bit 6 reverts Port A to input mode, resetting the `$4000–$7FFF` window to Bank 15 via the pull-ups.
+> Any routine updating Register 7 (Mixer) must keep Bit 6 high (`AY_IOA_OUTPUT = %01000000`). Clearing Bit 6 reverts Port A to input mode, resetting the `$4000–$7FFF` window to the top bank (Bank 31 on 512KB, or Bank 15 on 256KB) via the pull-ups.
 
 ### Step 2: Select Bank Number (Register 14)
 
-Write the target 16 KB bank number ($0..13$) to Register 14 (Port A data):
+Write the target 16 KB bank number ($0..29$ for 512KB, or $0..13$ for 256KB) to Register 14 (Port A data):
 
 ```ca65
     lda #AY_IO_A                ; Register 14
     sta AY_ADDR                 ; $0800
-    lda #target_bank            ; 0 to 13
+    lda #target_bank            ; 0 to 29 (or 0 to 13 on 256KB)
     sta AY_DATA                 ; $0801
 
     ; Data at $4000-$7FFF is now target_bank

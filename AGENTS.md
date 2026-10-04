@@ -11,7 +11,7 @@ This document defines specialized subagents for the Lokey 7800 YM2149 project. T
 ### Instructions
 
 - Follow the ca65 / ld65 coding style defined in `CLAUDE.md`.
-- Use linker configurations `examples/a7800.cfg` for 32KB fixed ROMs and `examples/a7800_banked.cfg` for 256KB banked ROMs.
+- Use linker configurations `examples/a7800.cfg` for 32KB fixed ROMs and `examples/a7800_banked.cfg` for 512KB banked ROMs.
 - Use `AY_ADDR = $0800` and `AY_DATA = $0801` for YM2149 communication.
 - Refer to `examples/` for ca65 implementation patterns.
 

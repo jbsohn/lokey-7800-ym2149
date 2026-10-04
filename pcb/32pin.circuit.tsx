@@ -180,7 +180,7 @@ export default () => (
       connections={{
         VCC: "net.VCC",
         GND: "net.GND",
-        "30": "net.GND",
+        GND_FRONT: "net.GND",
         A0: "net.A0", A1: "net.A1", A2: "net.A2", A3: "net.A3", A4: "net.A4",
         A5: "net.A5", A6: "net.A6", A7: "net.A7", A8: "net.A8", A9: "net.A9",
         A10: "net.A10", A11: "net.A11", A12: "net.A12", A13: "net.A13", A14: "net.A14",
@@ -587,7 +587,7 @@ export default () => (
       text="Lokey 7800 YM2149 v0.3\n32pin github.com/jbsohn/lokey-7800-ym2149"
       anchorAlignment="top_center"
       pcbX="0mm"
-      pcbY="-27mm"
+      pcbY="-25mm"
       fontSize="1.2mm"
     />
   </board >

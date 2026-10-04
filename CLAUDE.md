@@ -24,7 +24,7 @@
 - **Naming**: 
   - `UPPER_CASE` for constants, offsets, and hardware registers (e.g., `MSTAT`, `NUM_REGS`).
   - `snake_case` for labels, RAM variables, and code (e.g., `play_frame`, `music_ptr`).
-- **Linker Configurations**: Use `examples/a7800.cfg` for 32KB fixed ROMs or `examples/a7800_banked.cfg` for 256KB banked ROMs.
+- **Linker Configurations**: Use `examples/a7800.cfg` for 32KB fixed ROMs or `examples/a7800_banked.cfg` for 512KB banked ROMs.
 - **Memory Map**:
   - YM2149 Address Register: `$0800`
   - YM2149 Data Register: `$0801`

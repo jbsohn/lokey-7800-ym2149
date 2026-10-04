@@ -1,12 +1,12 @@
 # 32-Pin Board — Theory of Operation & Hardware Spec
 
-This document covers the **32-pin ROM board** (`pcb/32pin.circuit.tsx`): a single-YM2149 cartridge with DIP-32 EPROM socket (128KB–256KB) and YM IOA bank switching. For shared memory mapping and cartridge connector pinouts, see [Hardware.md](Hardware.md). For the 28-pin board, see [Hardware-28pin.md](Hardware-28pin.md).
+This document covers the **32-pin ROM board** (`pcb/32pin.circuit.tsx`): a single-YM2149 cartridge with DIP-32 / PLCC-32 ROM socket (128KB–512KB) and YM IOA bank switching. For shared memory mapping and cartridge connector pinouts, see [Hardware.md](Hardware.md). For the 28-pin board, see [Hardware-28pin.md](Hardware-28pin.md).
 
 ---
 
 ## Programmable Logic Device (ATF22V10) & `galette`
 
-The 32-pin board uses a 24-pin **ATF22V10 PLD** (`U_GAL`). It performs both address decoding ($0800/$0801 sound writes and $4000–$FFFF ROM reads) *and* ROM bank mapping: YM2149 IOA pins feed the PLD, which generates ROM upper address lines `ROMA14–ROMA17`.
+The 32-pin board uses a 24-pin **ATF22V10 PLD** (`U_GAL`). It performs both address decoding ($0800/$0801 sound writes and $4000–$FFFF ROM reads) *and* ROM bank mapping: YM2149 IOA pins feed the PLD, which generates ROM upper address lines `ROMA14–ROMA18`.
 
 Logic sources are compiled into JEDEC fusemaps (`.jed`) using [**galette**](https://github.com/simon-frankau/galette):
 

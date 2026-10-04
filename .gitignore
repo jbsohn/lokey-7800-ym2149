@@ -1,7 +1,6 @@
 *.a78
 *.bin
 *.yminc
-build/
 bin/
 .vscode
 .idea
@@ -16,6 +15,9 @@ bin/
 .testing/
 .DS_Store
 .tscircuit
+build/
+examples/build/
+pld/build/
 pcb/build/
 pcb/node_modules/
 pcb/.tools/
