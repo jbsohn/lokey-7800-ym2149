@@ -65,3 +65,55 @@ To ensure 100% long-term component availability from primary authorized distribu
   - Populate the outer DIP-32 socket for classic UV EPROMs (e.g., ST M27C2001) or bench ZIF testing.
   - Populate the inner through-hole PLCC-32 socket for brand-new, active-production Flash (`SST39SF020A-70-4C-NHE`).
 - **Cartridge Clearance:** A PLCC-32 through-hole socket is ~18 mm × 18 mm (less than half the length of a 42 mm DIP-32), significantly increasing clearance at the cartridge insertion throat.
+
+---
+
+## v0.4 Toolchain & Architecture Roadmap
+
+### State of the Art (v0.3 Release)
+
+The v0.3 release achieves a fully automated, headless **code-to-Gerber CI/CD pipeline** in GitHub Actions. With zero human GUI interaction, a `git push` compiles React JSX, computes 2-layer routing via Freerouting, runs KiCad DRC gates, validates Gerbers against physical edge clearances, and attaches release zips.
+
+### Limitations of the Current Pipeline ("The Hacky Middle")
+
+While the developer experience of writing TypeScript/React hardware components is unmatched, the translation boundary between **tscircuit's internal model** and **KiCad's manufacturing engine** currently relies on brittle AST patching:
+
+1. **Format Ping-Pong:**
+   `React JSX` $\rightarrow$ `circuit JSON` $\rightarrow$ `Specctra DSN` $\rightarrow$ `Freerouting CLI` $\rightarrow$ `circuit JSON` $\rightarrow$ `KiCad PCB` $\rightarrow$ AST patch (`kicadts`) $\rightarrow$ `kicad-cli` $\rightarrow$ Gerber zip $\rightarrow$ TypeScript verification script.
+2. **Missing Component Props in tscircuit:**
+   Standard high-level components (`<resistor>`, `<chip>`) lack fine-grained layout props (e.g. `hideDesignator`, `labelOffset`, `minGroundFillThickness`). Default values are baked in, forcing post-export patching.
+3. **Regex/AST File Patching:**
+   [pcb/build-pcb.ts](file:///Users/john/Projects/lokey-7800-ym2149/pcb/build-pcb.ts) must inspect KiCad S-expressions as raw text to bump reference designator font sizes, enforce minimum ground zone thickness, and inject custom design rules.
+4. **Layout Fragility:**
+   Placing physical millimeter coordinates directly in code (`pcbX`, `pcbY`) without visual feedback can inadvertently cause auto-router collisions (e.g., pulling an axial resistor into a keepout zone or triggering text shifts).
+
+### v0.4 Target Architecture: Native KiCad C++ / Python Post-Processing
+
+For v0.4, replace the fragile `kicadts` text-patching layer with an official post-processor utilizing KiCad's real internal engine—implemented either via a native **C++ CLI utility** or a **Python `pcbnew` script**:
+
+```mermaid
+flowchart LR
+    JSX[tscircuit React Code\nSchematic & Placement] --> DSN[Specctra DSN]
+    DSN --> FR[Freerouting Java CLI]
+    FR --> PCB[Exported .kicad_pcb]
+    PCB --> NATIVE[Native KiCad Post-Processor\nC++ CLI or Python pcbnew]
+    NATIVE --> KICAD[kicad-cli DRC]
+    KICAD --> GBR[Production Gerbers]
+```
+
+#### Implementation Options
+
+1. **Native C++ CLI Utility (`kicad-cart-tool`):**
+   - Directly links against KiCad's core C++ libraries (`libkicad_pcbnew`, `BOARD`, `ZONE_FILLER`, `FOOTPRINT`).
+   - Zero runtime dependencies: single, blazing-fast native binary with zero Python/Node environment overhead.
+   - Deep visibility: allows stepping through KiCad's actual DRC/polygon clipping math in `lldb`.
+2. **Native Python Script (`fixup-pcb.py` via `pcbnew`):**
+   - Uses KiCad's official SWIG C++ bindings.
+   - Simple 20-line script executed directly inside the `kicad/kicad` Docker container in GitHub Actions or locally via `/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli python`.
+
+#### Core Capabilities
+
+- **Clean Silkscreen Control:** Hides specific component references cleanly (e.g. `fp.Reference().SetVisible(False)` for bank pull-ups `R_BANK0..4`) without affecting geometry.
+- **Accurate Font Sizing:** Enforces fab text height/thickness minimums using native typesafe setters (`SetTextSize`, `SetTextThickness`).
+- **Official Zone Refill:** Runs KiCad's real C++ geometry engine (`ZONE_FILLER(board).Fill(board.Zones())`) instead of relying on CLI DRC side-effects.
+- **Zero Syntax Drift:** Output `.kicad_pcb` files are guaranteed 100% valid according to KiCad's schema, eliminating parser discrepancies.
