@@ -3,7 +3,7 @@
 
 .PHONY: all roms examples bank color_test rom a78 \
         logic pld \
-        pcb pcb-28pin pcb-32pin pcb-check freerouting \
+        pcb pcb-28pin pcb-32pin pcb-check pcb-verify freerouting \
         schematic schematic-28pin schematic-32pin \
         previews previews-28pin previews-32pin \
         clean distclean help
@@ -46,6 +46,9 @@ pcb-32pin:
 
 pcb-check:
 	@$(MAKE) -C pcb pcb-check
+
+pcb-verify:
+	@$(MAKE) -C pcb pcb-verify
 
 freerouting:
 	@$(MAKE) -C pcb freerouting

@@ -30,7 +30,8 @@ FREEROUTING_DEP       := $(if $(filter $(abspath $(FREEROUTING_LOCAL)),$(FREEROU
 TS_COMPONENTS         := $(wildcard *.tsx) $(wildcard *.ts)
 
 .PHONY: all help clean distclean freerouting pcb pcb-28pin pcb-32pin pcb-check \
-        schematic schematic-28pin schematic-32pin previews previews-28pin previews-32pin
+        schematic schematic-28pin schematic-32pin previews previews-28pin previews-32pin \
+        pcb-verify
 .DELETE_ON_ERROR:
 
 all: pcb
@@ -60,10 +61,18 @@ $(BUILD_DIR)/index-32pin.kicad_pcb: 32pin.circuit.tsx node_modules $(FREEROUTING
 	@bun build-pcb.ts 32pin.circuit.tsx
 
 pcb-28pin: $(BUILD_DIR)/index-28pin.kicad_pcb
+	@echo "Verifying 28-pin fabrication Gerbers..."
+	@bun verify-gerbers.ts $(BUILD_DIR)/gerbers-28pin.zip
 
 pcb-32pin: $(BUILD_DIR)/index-32pin.kicad_pcb
+	@echo "Verifying 32-pin fabrication Gerbers..."
+	@bun verify-gerbers.ts $(BUILD_DIR)/gerbers-32pin.zip
 
 pcb: pcb-32pin
+
+pcb-verify:
+	@bun verify-gerbers.ts $(BUILD_DIR)/gerbers-28pin.zip
+	@bun verify-gerbers.ts $(BUILD_DIR)/gerbers-32pin.zip
 
 # Fast check: route both boards and run the DRC gate, without writing gerbers.
 pcb-check: node_modules $(FREEROUTING_DEP)
