@@ -87,33 +87,31 @@ While the developer experience of writing TypeScript/React hardware components i
 4. **Layout Fragility:**
    Placing physical millimeter coordinates directly in code (`pcbX`, `pcbY`) without visual feedback can inadvertently cause auto-router collisions (e.g., pulling an axial resistor into a keepout zone or triggering text shifts).
 
-### v0.4 Target Architecture: Native KiCad C++ / Python Post-Processing
+### v0.4 Target Architecture: Native C++ Post-Processor (`kicad-cart-tool`)
 
-For v0.4, replace the fragile `kicadts` text-patching layer with an official post-processor utilizing KiCad's real internal engine—implemented either via a native **C++ CLI utility** or a **Python `pcbnew` script**:
+For v0.4, replace the fragile `kicadts` text-patching layer with a dedicated, lightweight C++ CLI utility that links directly against KiCad's core libraries:
 
 ```mermaid
 flowchart LR
     JSX[tscircuit React Code\nSchematic & Placement] --> DSN[Specctra DSN]
     DSN --> FR[Freerouting Java CLI]
     FR --> PCB[Exported .kicad_pcb]
-    PCB --> NATIVE[Native KiCad Post-Processor\nC++ CLI or Python pcbnew]
-    NATIVE --> KICAD[kicad-cli DRC]
+    PCB --> CPP[Native C++ CLI\nkicad-cart-tool]
+    CPP --> KICAD[kicad-cli DRC]
     KICAD --> GBR[Production Gerbers]
 ```
 
-#### Implementation Options
+#### Why Native C++ Over Python / SWIG
 
-1. **Native C++ CLI Utility (`kicad-cart-tool`):**
-   - Directly links against KiCad's core C++ libraries (`libkicad_pcbnew`, `BOARD`, `ZONE_FILLER`, `FOOTPRINT`).
-   - Zero runtime dependencies: single, blazing-fast native binary with zero Python/Node environment overhead.
-   - Deep visibility: allows stepping through KiCad's actual DRC/polygon clipping math in `lldb`.
-2. **Native Python Script (`fixup-pcb.py` via `pcbnew`):**
-   - Uses KiCad's official SWIG C++ bindings.
-   - Simple 20-line script executed directly inside the `kicad/kicad` Docker container in GitHub Actions or locally via `/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli python`.
+- **SWIG Deprecation:** KiCad's legacy SWIG Python wrappers (`pcbnew`) are formally deprecated by the KiCad core team due to cross-platform maintenance friction and fragility.
+- **Zero Runtime Dependencies:** A standalone C++ binary built via CMake requires no Python virtual environments, no SWIG runtime, and no Node.js/npm dependencies.
+- **Direct Engine Access:** Interacts directly with KiCad's real C++ data models (`BOARD`, `FOOTPRINT`, `PCB_FIELD`, `ZONE_FILLER`, `IO_MGR`).
+- **Sub-10ms Performance:** Loads, mutates, refills zones, and saves the board in milliseconds.
+- **Deep Visibility:** Allows stepping through KiCad's exact polygon math, zone clipping, and DRC logic in `lldb`.
 
-#### Core Capabilities
+#### Core Responsibilities of `kicad-cart-tool`
 
-- **Clean Silkscreen Control:** Hides specific component references cleanly (e.g. `fp.Reference().SetVisible(False)` for bank pull-ups `R_BANK0..4`) without affecting geometry.
-- **Accurate Font Sizing:** Enforces fab text height/thickness minimums using native typesafe setters (`SetTextSize`, `SetTextThickness`).
-- **Official Zone Refill:** Runs KiCad's real C++ geometry engine (`ZONE_FILLER(board).Fill(board.Zones())`) instead of relying on CLI DRC side-effects.
-- **Zero Syntax Drift:** Output `.kicad_pcb` files are guaranteed 100% valid according to KiCad's schema, eliminating parser discrepancies.
+- **Clean Silkscreen & Text Control:** Hides specific component references programmatically (e.g., `fp->Reference().SetVisible(false)` for `R_BANK0..4`) without shifting geometry.
+- **Fab Design Rule Enforcement:** Enforces minimum text height, width, and thickness directly on footprint properties using native setters (`SetTextSize`, `SetTextThickness`).
+- **Official Zone Refilling:** Executes KiCad's real C++ polygon engine (`ZONE_FILLER(board.get()).Fill(board->Zones())`) directly, eliminating the need to trigger zone refills via headless DRC side-effects.
+- **Guaranteed Syntax Fidelity:** Reading and writing through `IO_MGR::PluginFind(IO_MGR::PCB_FILE_T::KICAD_SEXP)` guarantees 100% schema-compliant output with zero text/parser drift.
