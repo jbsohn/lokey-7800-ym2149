@@ -112,19 +112,6 @@ export const ROM_PLCC32 = (props: ChipProps) => (
           portHints={[`pin${pad.num}`, `${pad.num}`]}
         />
       ))}
-      {/* Silkscreen Pin 1 index notch / chamfer and label */}
-      <silkscreentext
-        pcbX={0}
-        pcbY={-4.5}
-        text="PLCC-32"
-        fontSize="0.8mm"
-      />
-      <silkscreentext
-        pcbX={0}
-        pcbY={-5.5}
-        text="▲ 1"
-        fontSize="0.7mm"
-      />
     </footprint>
   </chip>
 );

@@ -232,10 +232,10 @@ function writeProjectFiles(r: BoardRules) {
   (condition "A.Reference == 'J1' || B.Reference == 'J1'")
 )
 
-# HALT, PHI2, RW, A13, A14, VCC, GND must escape through the narrow connector notch.
+# HALT, PHI2, RW, A13, A14 must escape through the narrow connector notch.
 (rule "connector_notch_escape_clearance"
   (constraint edge_clearance (min 0mm))
-  (condition "A.NetName == 'HALT' || B.NetName == 'HALT' || A.NetName == 'PHI2' || B.NetName == 'PHI2' || A.NetName == 'RW' || B.NetName == 'RW' || A.NetName == 'A13' || B.NetName == 'A13' || A.NetName == 'A14' || B.NetName == 'A14' || A.NetName == 'VCC' || B.NetName == 'VCC' || A.NetName == 'GND' || B.NetName == 'GND'")
+  (condition "A.NetName == 'HALT' || B.NetName == 'HALT' || A.NetName == 'PHI2' || B.NetName == 'PHI2' || A.NetName == 'RW' || B.NetName == 'RW' || A.NetName == 'A13' || B.NetName == 'A13' || A.NetName == 'A14' || B.NetName == 'A14'")
 )
 `,
   );
@@ -331,7 +331,7 @@ async function fabricate() {
   console.log("Exporting Gerbers and drill files...");
   rmSync(GERBER_DIR, { recursive: true, force: true });
   mkdirSync(GERBER_DIR, { recursive: true });
-  kicad(["pcb", "export", "gerbers", "-o", GERBER_DIR, PCB]);
+  kicad(["pcb", "export", "gerbers", "--subtract-soldermask", "-o", GERBER_DIR, PCB]);
   kicad(["pcb", "export", "drill", "-o", GERBER_DIR, PCB]);
 
   const jobPath = join(GERBER_DIR, "index-job.gbrjob");

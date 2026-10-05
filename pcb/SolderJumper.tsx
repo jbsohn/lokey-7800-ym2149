@@ -24,6 +24,7 @@ export const SolderJumper = ({ label, labelL, labelR, ...props }: SolderJumperPr
         height="2.0mm"
         pcbX="-1.5mm"
         pcbY="0mm"
+        layer={props.layer}
         portHints={["pin1"]}
       />
       <smtpad
@@ -32,6 +33,7 @@ export const SolderJumper = ({ label, labelL, labelR, ...props }: SolderJumperPr
         height="2.0mm"
         pcbX="0mm"
         pcbY="0mm"
+        layer={props.layer}
         portHints={["pin2"]}
       />
       <smtpad
@@ -40,30 +42,34 @@ export const SolderJumper = ({ label, labelL, labelR, ...props }: SolderJumperPr
         height="2.0mm"
         pcbX="1.5mm"
         pcbY="0mm"
+        layer={props.layer}
         portHints={["pin3"]}
       />
       {label && (
         <silkscreentext
           pcbX={0}
-          pcbY={1.8}
+          pcbY={1.6}
           text={label}
           fontSize="0.8mm"
+          layer={props.layer}
         />
       )}
       {labelL && (
         <silkscreentext
           pcbX={-1.5}
-          pcbY={-1.8}
+          pcbY={-2.3}
           text={labelL}
-          fontSize="0.6mm"
+          fontSize="0.8mm"
+          layer={props.layer}
         />
       )}
       {labelR && (
         <silkscreentext
           pcbX={1.5}
-          pcbY={-1.8}
+          pcbY={-2.3}
           text={labelR}
-          fontSize="0.6mm"
+          fontSize="0.8mm"
+          layer={props.layer}
         />
       )}
     </footprint>

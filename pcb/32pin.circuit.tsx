@@ -304,6 +304,21 @@ export default () => (
           D5: "net.D5", D6: "net.D6", D7: "net.D7",
         }}
       />
+      {/* Silkscreen orientation markings for the PLCC-32 socket cavity */}
+      <silkscreentext
+        text="PLCC-32"
+        pcbX="0mm"
+        pcbY="-1.5mm"
+        fontSize="0.9mm"
+        anchorAlignment="center"
+      />
+      <silkscreentext
+        text="[Pin 1] >"
+        pcbX="3.5mm"
+        pcbY="0mm"
+        fontSize="0.8mm"
+        anchorAlignment="center_right"
+      />
       <capacitor
         name="C_ROM"
         capacitance="0.1uF"
@@ -585,10 +600,10 @@ export default () => (
 
     <silkscreentext
       text="Lokey 7800 YM2149 v0.3\n32pin github.com/jbsohn/lokey-7800-ym2149"
-      anchorAlignment="top_center"
-      pcbX="0mm"
-      pcbY="-25mm"
-      fontSize="1.2mm"
+      anchorAlignment="top_left"
+      pcbX="-21mm"
+      pcbY="-26mm"
+      fontSize="1.0mm"
     />
   </board >
 );

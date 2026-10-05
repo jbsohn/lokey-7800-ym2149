@@ -487,10 +487,10 @@ export default () => (
 
     <silkscreentext
       text="Lokey 7800 YM v0.3\n28pin github.com/jbsohn/lokey-7800-ym2149"
-      anchorAlignment="top_center"
-      pcbX="0mm"
-      pcbY="-25mm"
-      fontSize="1.2mm"
+      anchorAlignment="top_left"
+      pcbX="-21mm"
+      pcbY="-26mm"
+      fontSize="1.0mm"
     />
   </board >
 );
