@@ -160,7 +160,8 @@ const KICAD_CLI = (() => {
 
 function requireKicad10(): void {
   const version = run(KICAD_CLI, ["version"]).stdout.trim();
-  if (Number(version.split(".")[0]) < 10) {
+  const major = Number(version.split(".")[0]);
+  if (Number.isNaN(major) || major < 10) {
     throw new Error(
       `KiCad 10 or newer is required (found ${version || "no kicad-cli"}): 'kicad-cli pcb drc --refill-zones --save-board' does not exist before 10.`,
     );
@@ -183,10 +184,12 @@ function buildAndRoute(): { path: string; rules: BoardRules } {
   console.log(`Phase 1: Building unrouted circuit JSON for ${entry}...`);
   const distDir = join("dist", board);
   rmSync(distDir, { recursive: true, force: true });
-  run("bunx", ["tsci", "build", entry!]); // exits non-zero while unrouted
+  const build = run("bunx", ["tsci", "build", entry!]); // exits non-zero while unrouted
 
   const builtJson = join(distDir, "circuit.json");
-  if (!existsSync(builtJson)) throw new Error(`tsci build did not produce ${builtJson}`);
+  if (!existsSync(builtJson)) {
+    throw new Error(`tsci build did not produce ${builtJson}:\n${build.stderr || build.stdout}`);
+  }
   const circuitJson: AnyCircuitElement[] = JSON.parse(readFileSync(builtJson, "utf8"));
 
   console.log("Routing with freerouting...");
@@ -208,7 +211,7 @@ function buildAndRoute(): { path: string; rules: BoardRules } {
     ...extra,
   ]);
   if (fr.status !== 0 || !existsSync(sesPath)) {
-    throw new Error(`freerouting failed:\n${fr.stderr}`);
+    throw new Error(`freerouting failed:\n${fr.stderr || fr.stdout}`);
   }
 
   const frDrcPath = join(TS_DIR, `${board}-drc.json`);
