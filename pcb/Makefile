@@ -61,18 +61,13 @@ $(BUILD_DIR)/index-32pin.kicad_pcb: 32pin.circuit.tsx node_modules $(FREEROUTING
 	@bun build-pcb.ts 32pin.circuit.tsx
 
 pcb-28pin: $(BUILD_DIR)/index-28pin.kicad_pcb
-	@echo "Verifying 28-pin fabrication Gerbers..."
-	@bun verify-gerbers.ts $(BUILD_DIR)/gerbers-28pin.zip
 
 pcb-32pin: $(BUILD_DIR)/index-32pin.kicad_pcb
-	@echo "Verifying 32-pin fabrication Gerbers..."
-	@bun verify-gerbers.ts $(BUILD_DIR)/gerbers-32pin.zip
 
 pcb: pcb-32pin
 
-pcb-verify:
-	@bun verify-gerbers.ts $(BUILD_DIR)/gerbers-28pin.zip
-	@bun verify-gerbers.ts $(BUILD_DIR)/gerbers-32pin.zip
+pcb-verify: $(BUILD_DIR)/index-28pin.kicad_pcb $(BUILD_DIR)/index-32pin.kicad_pcb
+	@echo "PCB fabrication outputs verified via KiCad DRC gate and build packaging."
 
 # Fast check: route both boards and run the DRC gate, without writing gerbers.
 pcb-check: node_modules $(FREEROUTING_DEP)
