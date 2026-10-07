@@ -15,10 +15,13 @@
     "build": "bun run build:28pin && bun run build:32pin",
     "build:28pin": "bun build-pcb.ts 28pin.circuit.tsx",
     "build:32pin": "bun build-pcb.ts 32pin.circuit.tsx",
+    "build:ay40": "bun build-pcb.ts ay40.circuit.tsx",
     "check": "bun run check:28pin && bun run check:32pin",
     "check:28pin": "bun build-pcb.ts 28pin.circuit.tsx --check",
     "check:32pin": "bun build-pcb.ts 32pin.circuit.tsx --check",
+    "check:ay40": "bun build-pcb.ts ay40.circuit.tsx --check",
     "snapshot": "tsci snapshot",
+    "snapshot:ay40": "tsci snapshot ay40.circuit.tsx",
     "snapshot:update": "tsci snapshot --update",
     "start": "tsci dev",
     "typecheck": "tsc --noEmit"
