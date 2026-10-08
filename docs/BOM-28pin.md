@@ -10,93 +10,101 @@ Passive ratings are not fixed by the design; recommended defaults:
 
 ## Build notes (v0.2 — read before populating)
 
-Two bodge wires get a v0.2 board booting and playing sound for the most part — everything else below is an optional refinement, not required to get a working board:
+Two bodge wires get a v0.2 board booting and playing sound for the most part — everything else below is an optional
+refinement, not required to get a working board:
 
-1. **ROM pin 22 (`/OE`) → GND**, landed on ROM pin 14 (also GND). A known freerouting/zone-fill quirk can leave this pad disconnected from the GND pour despite the design tying it to ground in source — verify continuity after assembly and bodge if missing. See `docs/PCB-Revisions-v0.2.md` (`ERR-OE`).
-2. **`SUM_NODE` (LM358 pin 2) → `C_AUDIO_OUT` pin 2 (`Exaudio`, cart pin 18)**. Already fixed at the source level (`Exaudio` ties directly to `SUM_NODE` in `pcb/28pin.circuit.tsx`) — only needed if populating a board fabbed before that fix. See `docs/PCB-Revisions-v0.2.md` (`ERR-AUDIO-DISTORT`).
+1. **ROM pin 22 (`/OE`) → GND**, landed on ROM pin 14 (also GND). A known freerouting/zone-fill quirk can leave this pad
+   disconnected from the GND pour despite the design tying it to ground in source — verify continuity after assembly and
+   bodge if missing. See `docs/PCB-Revisions-v0.2.md` (`ERR-OE`).
+2. **`SUM_NODE` (LM358 pin 2) → `C_AUDIO_OUT` pin 2 (`Exaudio`, cart pin 18)**. Already fixed at the source level
+   (`Exaudio` ties directly to `SUM_NODE` in `pcb/28pin.circuit.tsx`) — only needed if populating a board fabbed before
+   that fix. See `docs/PCB-Revisions-v0.2.md` (`ERR-AUDIO-DISTORT`).
 
 Optional refinements (board works without either of these, just with some rough edges):
 
-- **Silences BIOS-boot startup noise:** Active CD40106 Schmitt-trigger reset-delay circuit integrated directly into the v0.3 PCB layout (in `pcb/YmResetAmp.tsx` under the YM socket). Holds `!RESET` low for ~2.0s during 7800 BIOS boot, eliminating startup static/garble. **Confirmed working on real hardware 2026-09-17.**
-- **Chord-clipping headroom:** `R_YM_AUDIOA/B/C` below are 3k (raised from 1k) so a full 3-voice chord at max volume doesn't clip the LM358. **Not yet bench-confirmed** against a real chord — the original 1k plays fine otherwise.
+- **Silences BIOS-boot startup noise:** Active CD40106 Schmitt-trigger reset-delay circuit integrated directly into the
+  v0.3 PCB layout (in `pcb/YmResetAmp.tsx` under the YM socket). Holds `!RESET` low for ~2.0s during 7800 BIOS boot,
+  eliminating startup static/garble. **Confirmed working on real hardware 2026-09-17.**
+- **Chord-clipping headroom:** `R_YM_AUDIOA/B/C` below are 3k (raised from 1k) so a full 3-voice chord at max volume
+  doesn't clip the LM358. **Not yet bench-confirmed** against a real chord — the original 1k plays fine otherwise.
 
 ## Integrated circuits
 
-| Ref | Part | Package | Layer | Function |
-| --- | --- | --- | --- | --- |
-| U_AMP | LM358 | DIP-8, 0.3" | bottom | Dual op-amp — audio summing / output stage |
-| U_GAL | ATF16V8B | DIP-20, 0.3" | top | Address-decode / bus-control PLD, programmed with pld/*.pld (make logic) |
-| U_LATCH | 74HCT373 | DIP-20, 0.3" | top | Octal transparent latch — D0-D7 to YM DA0-DA7 |
-| U_RESET | CD40106 | DIP-14, 0.3" | bottom | Hex Schmitt-trigger inverter — active reset delay buffer (silences BIOS noise) |
-| U_ROM | 27C256 | DIP-28, 0.6" | top | Program ROM (image burned per build) |
-| U_YM | YM2149 | DIP-40, 0.6" | top | Programmable sound generator (AY-3-8910 largely pin-compatible) |
+| Ref     | Part     | Package      | Layer  | Function                                                                                                                    |
+|---------|----------|--------------|--------|-----------------------------------------------------------------------------------------------------------------------------|
+| U_AMP   | LM358    | DIP-8, 0.3"  | bottom | Dual op-amp — audio summing / output stage                                                                                  |
+| U_GAL   | ATF16V8B | DIP-20, 0.3" | top    | Address-decode / bus-control PLD, programmed with pld/*.pld (make logic)                                                    |
+| U_LATCH | 74HCT373 | DIP-20, 0.3" | top    | Octal transparent latch — D0-D7 to YM DA0-DA7                                                                               |
+| U_RESET | CD40106  | DIP-14, 0.3" | bottom | Hex Schmitt-trigger inverter — active reset delay buffer (silences BIOS noise)                                              |
+| U_ROM   | 27C256   | DIP-28, 0.6" | top    | Program ROM (image burned per build)                                                                                        |
+| U_YM    | YM2149   | DIP-40, 0.6" | top    | Programmable sound generator (AY-3-8910 largely pin-compatible; or optional `pcb/ym2149.circuit.tsx` daughterboard carrier) |
 
 ## Resistors
 
-| Ref | Value | Connections | Layer | Function |
-| --- | --- | --- | --- | --- |
-| R_FB | 1k | SUM_NODE / OPAMP_OUT | bottom | LM358 inverting-stage feedback resistor |
-| R_PULL | 1k | OPAMP_OUT / GND | top | Class-A bias / output pulldown |
-| R_RESET | 220k | VCC / RC_DELAY | bottom | Reset RC pull-up (with C_RESET), ~2.0s YM release delay through CD40106 |
-| R_SERIES | 1k | OPAMP_OUT / CAP_PLUS | top | Output series resistor into AC-coupling cap |
-| R_YM_AUDIOA | 3k | ANALOG_A / SUM_NODE | top | Channel A isolation resistor into LM358 summing node (raised from 1k for chord headroom, untested) |
-| R_YM_AUDIOB | 3k | ANALOG_B / SUM_NODE | top | Channel B isolation resistor into LM358 summing node (raised from 1k for chord headroom, untested) |
-| R_YM_AUDIOC | 3k | ANALOG_C / SUM_NODE | top | Channel C isolation resistor into LM358 summing node (raised from 1k for chord headroom, untested) |
+| Ref         | Value | Connections          | Layer  | Function                                                                                           |
+|-------------|-------|----------------------|--------|----------------------------------------------------------------------------------------------------|
+| R_FB        | 1k    | SUM_NODE / OPAMP_OUT | bottom | LM358 inverting-stage feedback resistor                                                            |
+| R_PULL      | 1k    | OPAMP_OUT / GND      | top    | Class-A bias / output pulldown                                                                     |
+| R_RESET     | 220k  | VCC / RC_DELAY       | bottom | Reset RC pull-up (with C_RESET), ~2.0s YM release delay through CD40106                            |
+| R_SERIES    | 1k    | OPAMP_OUT / CAP_PLUS | top    | Output series resistor into AC-coupling cap                                                        |
+| R_YM_AUDIOA | 3k    | ANALOG_A / SUM_NODE  | top    | Channel A isolation resistor into LM358 summing node (raised from 1k for chord headroom, untested) |
+| R_YM_AUDIOB | 3k    | ANALOG_B / SUM_NODE  | top    | Channel B isolation resistor into LM358 summing node (raised from 1k for chord headroom, untested) |
+| R_YM_AUDIOC | 3k    | ANALOG_C / SUM_NODE  | top    | Channel C isolation resistor into LM358 summing node (raised from 1k for chord headroom, untested) |
 
 ## Capacitors
 
-| Ref | Value | Type | Connections | Layer | Populate? | Function |
-| --- | --- | --- | --- | --- | --- | --- |
-| C_AMP | 0.1uF | ceramic | VCC / GND | bottom | Yes | U_AMP supply decoupling |
-| C_AUDIO_OUT | 10uF | electrolytic, polarized | CAP_PLUS / SUM_NODE | bottom | **Required** | AC-couples audio to Exaudio (cart pin 18) |
-| C_BULK | 10uF | electrolytic, polarized | VCC / GND | bottom | Optional | Bulk rail reservoir / decoupling — Board runs without it; console rail + 0.1 uF caps cover it. OK to leave unpopulated. |
-| C_GAL | 0.1uF | ceramic | VCC / GND | top | Yes | U_GAL supply decoupling |
-| C_LATCH | 0.1uF | ceramic | VCC / GND | top | Yes | U_LATCH supply decoupling |
-| C_RESET | 10uF | electrolytic, polarized | RC_DELAY / GND | bottom | **Required** | Reset delay timing cap (with R_RESET / CD40106) |
-| C_ROM | 0.1uF | ceramic | VCC / GND | top | Yes | U_ROM supply decoupling |
-| C_YM | 0.1uF | ceramic | VCC / GND | top | Yes | U_YM supply decoupling |
+| Ref         | Value | Type                    | Connections         | Layer  | Populate?    | Function                                                                                                                |
+|-------------|-------|-------------------------|---------------------|--------|--------------|-------------------------------------------------------------------------------------------------------------------------|
+| C_AMP       | 0.1uF | ceramic                 | VCC / GND           | bottom | Yes          | U_AMP supply decoupling                                                                                                 |
+| C_AUDIO_OUT | 10uF  | electrolytic, polarized | CAP_PLUS / SUM_NODE | bottom | **Required** | AC-couples audio to Exaudio (cart pin 18)                                                                               |
+| C_BULK      | 10uF  | electrolytic, polarized | VCC / GND           | bottom | Optional     | Bulk rail reservoir / decoupling — Board runs without it; console rail + 0.1 uF caps cover it. OK to leave unpopulated. |
+| C_GAL       | 0.1uF | ceramic                 | VCC / GND           | top    | Yes          | U_GAL supply decoupling                                                                                                 |
+| C_LATCH     | 0.1uF | ceramic                 | VCC / GND           | top    | Yes          | U_LATCH supply decoupling                                                                                               |
+| C_RESET     | 10uF  | electrolytic, polarized | RC_DELAY / GND      | bottom | **Required** | Reset delay timing cap (with R_RESET / CD40106)                                                                         |
+| C_ROM       | 0.1uF | ceramic                 | VCC / GND           | top    | Yes          | U_ROM supply decoupling                                                                                                 |
+| C_YM        | 0.1uF | ceramic                 | VCC / GND           | top    | Yes          | U_YM supply decoupling                                                                                                  |
 
 ## Board features — not populated parts
 
-| Ref | What it is |
-| --- | --- |
-| J1 | Atari 7800 cartridge edge connector — gold PCB fingers, part of the board |
-| JP1 | Solder jumper — ROM pin 1 (VPP / A15) ROM-size select |
-| JP2 | Solder jumper — ROM pin 27 (A14) ROM-size select |
-| U6 | GND-plane stitching via — plated hole only |
-| U7 | GND-plane stitching via — plated hole only |
+| Ref | What it is                                                                |
+|-----|---------------------------------------------------------------------------|
+| J1  | Atari 7800 cartridge edge connector — gold PCB fingers, part of the board |
+| JP1 | Solder jumper — ROM pin 1 (VPP / A15) ROM-size select                     |
+| JP2 | Solder jumper — ROM pin 27 (A14) ROM-size select                          |
+| U6  | GND-plane stitching via — plated hole only                                |
+| U7  | GND-plane stitching via — plated hole only                                |
 
 ## Pick list
 
-| Qty | Part / Value | Package | Designators |
-| --- | --- | --- | --- |
-| 1 | 27C256 | DIP-28, 0.6" | U_ROM |
-| 1 | 74HCT373 | DIP-20, 0.3" | U_LATCH |
-| 1 | ATF16V8B | DIP-20, 0.3" | U_GAL |
-| 1 | CD40106 | DIP-14, 0.3" | U_RESET |
-| 1 | LM358 | DIP-8, 0.3" | U_AMP |
-| 1 | YM2149 | DIP-40, 0.6" | U_YM |
-| 5 | 0.1uF | Axial, 7.62 mm pitch | C_AMP, C_GAL, C_LATCH, C_ROM, C_YM |
-| 2-3 | 10uF | Axial, 7.62 mm pitch | C_AUDIO_OUT, C_RESET (C_BULK optional) |
-| 1 | 220k | Axial, 7.62 mm pitch | R_RESET |
-| 3 | 1k | Axial, 7.62 mm pitch | R_FB, R_PULL, R_SERIES |
-| 3 | 3k | Axial, 7.62 mm pitch | R_YM_AUDIOA, R_YM_AUDIOB, R_YM_AUDIOC |
+| Qty | Part / Value | Package              | Designators                            |
+|-----|--------------|----------------------|----------------------------------------|
+| 1   | 27C256       | DIP-28, 0.6"         | U_ROM                                  |
+| 1   | 74HCT373     | DIP-20, 0.3"         | U_LATCH                                |
+| 1   | ATF16V8B     | DIP-20, 0.3"         | U_GAL                                  |
+| 1   | CD40106      | DIP-14, 0.3"         | U_RESET                                |
+| 1   | LM358        | DIP-8, 0.3"          | U_AMP                                  |
+| 1   | YM2149       | DIP-40, 0.6"         | U_YM                                   |
+| 5   | 0.1uF        | Axial, 7.62 mm pitch | C_AMP, C_GAL, C_LATCH, C_ROM, C_YM     |
+| 2-3 | 10uF         | Axial, 7.62 mm pitch | C_AUDIO_OUT, C_RESET (C_BULK optional) |
+| 1   | 220k         | Axial, 7.62 mm pitch | R_RESET                                |
+| 3   | 1k           | Axial, 7.62 mm pitch | R_FB, R_PULL, R_SERIES                 |
+| 3   | 3k           | Axial, 7.62 mm pitch | R_YM_AUDIOA, R_YM_AUDIOB, R_YM_AUDIOC  |
 
 ## Sockets (recommended, not on silkscreen)
 
-| For | Socket |
-| --- | --- |
-| U_AMP | DIP, 0.3" (optional) |
-| U_GAL | DIP, 0.3" |
+| For     | Socket               |
+|---------|----------------------|
+| U_AMP   | DIP, 0.3" (optional) |
+| U_GAL   | DIP, 0.3"            |
 | U_LATCH | DIP, 0.3" (optional) |
 | U_RESET | DIP, 0.3" (optional) |
-| U_ROM | DIP, 0.6" |
-| U_YM | DIP, 0.6" |
+| U_ROM   | DIP, 0.6"            |
+| U_YM    | DIP, 0.6"            |
 
 ### ROM size — `JP1` / `JP2` settings
 
-| ROM | `JP1` (pin 1, VPP/A15) | `JP2` (pin 27, A14) | Accessible |
-| :-- | :-- | :-- | :-- |
-| 16 KB (27C128) | Bridge Left (VCC) | Bridge Left (VCC) | 16 KB mirrored `$4000-$FFFF` |
-| 32 KB (27C256) | Bridge Left (VCC) | Bridge Right (A14) | 32 KB `$8000-$FFFF` |
-| 64 KB (27C512) | Bridge Right (A15) | Bridge Right (A14) | 48 KB `$4000-$FFFF` unmirrored |
+| ROM            | `JP1` (pin 1, VPP/A15) | `JP2` (pin 27, A14) | Accessible                     |
+|:---------------|:-----------------------|:--------------------|:-------------------------------|
+| 16 KB (27C128) | Bridge Left (VCC)      | Bridge Left (VCC)   | 16 KB mirrored `$4000-$FFFF`   |
+| 32 KB (27C256) | Bridge Left (VCC)      | Bridge Right (A14)  | 32 KB `$8000-$FFFF`            |
+| 64 KB (27C512) | Bridge Right (A15)     | Bridge Right (A14)  | 48 KB `$4000-$FFFF` unmirrored |

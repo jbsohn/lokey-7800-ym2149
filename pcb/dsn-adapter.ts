@@ -140,9 +140,11 @@ function patchDsn(dsn: string, circuitJson: AnyCircuitElement[]): string {
     .join("\n");
   if (planes) dsn = dsn.replace(/(\(boundary[\s\S]*?\n {4}\)\n)/, `$1${planes}\n`);
 
-  // tscircuit's default 0.15mm clearance leaves the D3 connector finger unroutable
-  // (0.54mm gap to its neighbour); 0.2mm, the same as the KiCad flow, routes fully.
-  dsn = dsn.replace(/\(clearance (\d+)\)/g, (_, n) => `(clearance ${Math.max(Number(n), MIN_CLEARANCE_UM)})`);
+  // Cart-edge boards (J1) require 0.2mm clearance so finger D3 routes cleanly;
+  // carrier daughterboards without J1 (e.g. dense TQFP-44 ym2149) use standard 0.15mm (6 mil) clearance.
+  const hasCardEdge = circuitJson.some((e: any) => e.type === "source_component" && e.name === "J1");
+  const minClearance = hasCardEdge ? MIN_CLEARANCE_UM : 150;
+  dsn = dsn.replace(/\(clearance (\d+)\)/g, (_, n) => `(clearance ${Math.max(Number(n), minClearance)})`);
 
   return dsn.replace(
     /(\(rule\s*\(width \d+\)\s*\(clearance \d+\))/g,
@@ -262,8 +264,10 @@ function verifyDsn(dsn: string, circuitJson: AnyCircuitElement[]): void {
   const pours = circuitJson.filter((e: any) => e.type === "pcb_copper_pour" && nets.has(e.source_net_id)).length;
   const planes = (dsn.match(/\(plane /g) ?? []).length;
   if (planes !== pours) problems.push(`${planes} planes in the DSN but ${pours} copper pours in the design`);
+  const hasCardEdge = circuitJson.some((e: any) => e.type === "source_component" && e.name === "J1");
+  const minClearance = hasCardEdge ? MIN_CLEARANCE_UM : 150;
   for (const m of dsn.matchAll(/\(clearance (\d+)\)/g)) {
-    if (Number(m[1]) < MIN_CLEARANCE_UM) problems.push(`clearance ${m[1]}um is below the ${MIN_CLEARANCE_UM}um minimum`);
+    if (Number(m[1]) < minClearance) problems.push(`clearance ${m[1]}um is below the ${minClearance}um minimum`);
   }
   const rules = (dsn.match(/\(rule\s*\(width \d+\)/g) ?? []).length;
   for (const kind of ["pcb", "smd_pcb"]) {

@@ -29,8 +29,9 @@ FREEROUTING_DEP       := $(if $(filter $(abspath $(FREEROUTING_LOCAL)),$(FREEROU
 
 TS_COMPONENTS         := $(wildcard *.tsx) $(wildcard *.ts)
 
-.PHONY: all help clean distclean freerouting pcb pcb-28pin pcb-32pin pcb-check \
-        schematic schematic-28pin schematic-32pin previews previews-28pin previews-32pin \
+.PHONY: all help clean distclean freerouting pcb pcb-28pin pcb-32pin pcb-ym2149 fab-ym2149 pcb-check \
+        schematic schematic-28pin schematic-32pin schematic-ym2149 \
+        previews previews-28pin previews-32pin previews-ym2149 \
         pcb-verify
 .DELETE_ON_ERROR:
 
@@ -64,15 +65,24 @@ pcb-28pin: $(BUILD_DIR)/index-28pin.kicad_pcb
 
 pcb-32pin: $(BUILD_DIR)/index-32pin.kicad_pcb
 
+$(BUILD_DIR)/index-ym2149.kicad_pcb: ym2149.circuit.tsx node_modules $(FREEROUTING_DEP) $(TS_COMPONENTS)
+	@echo "Routing and exporting YM2149 daughterboard from tscircuit..."
+	@bun build-pcb.ts ym2149.circuit.tsx
+
+pcb-ym2149: $(BUILD_DIR)/index-ym2149.kicad_pcb
+
+fab-ym2149: pcb-ym2149
+
 pcb: pcb-32pin
 
-pcb-verify: $(BUILD_DIR)/index-28pin.kicad_pcb $(BUILD_DIR)/index-32pin.kicad_pcb
+pcb-verify: $(BUILD_DIR)/index-28pin.kicad_pcb $(BUILD_DIR)/index-32pin.kicad_pcb $(BUILD_DIR)/gerbers-ym2149.zip
 	@echo "PCB fabrication outputs verified via KiCad DRC gate and build packaging."
 
-# Fast check: route both boards and run the DRC gate, without writing gerbers.
+# Fast check: route all boards and run the DRC gate, without writing gerbers.
 pcb-check: node_modules $(FREEROUTING_DEP)
 	@bun build-pcb.ts 28pin.circuit.tsx --check
 	@bun build-pcb.ts 32pin.circuit.tsx --check
+	@bun build-pcb.ts ym2149.circuit.tsx --check
 
 # --- Schematic Exports ---
 $(BUILD_DIR)/schematic-28pin.svg: 28pin.circuit.tsx node_modules
@@ -96,6 +106,17 @@ $(BUILD_DIR)/schematic-32pin.svg: 32pin.circuit.tsx node_modules
 schematic-28pin: $(BUILD_DIR)/schematic-28pin.svg
 
 schematic-32pin: $(BUILD_DIR)/schematic-32pin.svg
+
+$(BUILD_DIR)/schematic-ym2149.svg: ym2149.circuit.tsx node_modules
+	@mkdir -p $(BUILD_DIR)
+	@echo "Exporting YM2149 schematic SVG..."
+	@bunx tsci export -f schematic-svg ym2149.circuit.tsx -o $(BUILD_DIR)/schematic-ym2149.svg
+	@if command -v rsvg-convert >/dev/null 2>&1; then \
+		echo "Converting schematic SVG to PNG..."; \
+		rsvg-convert -w 2048 $(BUILD_DIR)/schematic-ym2149.svg -o $(BUILD_DIR)/schematic-ym2149.png; \
+	fi
+
+schematic-ym2149: $(BUILD_DIR)/schematic-ym2149.svg
 
 schematic: schematic-32pin
 
@@ -124,6 +145,18 @@ previews-32pin: $(BUILD_DIR)/index-32pin.kicad_pcb
 	@echo "Rendering 32-pin PCB 3D preview from KiCad..."
 	@$(KICAD_CLI) pcb render --quality high --floor --rotate -45,0,45 --width 1600 --height 1200 --background opaque -o $(BUILD_DIR)/pcb_3d_32pin.png $(BUILD_DIR)/index-32pin.kicad_pcb
 
+previews-ym2149: $(BUILD_DIR)/index-ym2149.kicad_pcb
+	@echo "Exporting YM2149 PCB SVG previews from KiCad..."
+	@$(KICAD_CLI) pcb export svg --mode-single --layers F.Cu,F.Silkscreen,F.Mask,Edge.Cuts --exclude-drawing-sheet --fit-page-to-board -o $(BUILD_DIR)/pcb_front_ym2149.svg $(BUILD_DIR)/index-ym2149.kicad_pcb
+	@$(KICAD_CLI) pcb export svg --mode-single --layers B.Cu,B.Silkscreen,B.Mask,Edge.Cuts --exclude-drawing-sheet --fit-page-to-board --mirror -o $(BUILD_DIR)/pcb_back_ym2149.svg $(BUILD_DIR)/index-ym2149.kicad_pcb
+	@if command -v rsvg-convert >/dev/null 2>&1; then \
+		echo "Converting PCB SVGs to PNG..."; \
+		rsvg-convert -w 2048 $(BUILD_DIR)/pcb_front_ym2149.svg -o $(BUILD_DIR)/pcb_front_ym2149.png; \
+		rsvg-convert -w 2048 $(BUILD_DIR)/pcb_back_ym2149.svg -o $(BUILD_DIR)/pcb_back_ym2149.png; \
+	fi
+	@echo "Rendering YM2149 PCB 3D preview from KiCad..."
+	@$(KICAD_CLI) pcb render --quality high --floor --rotate -45,0,45 --width 1600 --height 1200 --background opaque -o $(BUILD_DIR)/pcb_3d_ym2149.png $(BUILD_DIR)/index-ym2149.kicad_pcb
+
 previews: previews-32pin
 
 clean:
@@ -139,6 +172,7 @@ help:
 	@echo "  make freerouting    - Download pinned Freerouting jar into .tools/ (SHA-256 verified)"
 	@echo "  make pcb-28pin      - Route and export 28-pin board (tscircuit -> Freerouting -> Gerbers)"
 	@echo "  make pcb-32pin      - Route and export 32-pin board (tscircuit -> Freerouting -> Gerbers)"
+	@echo "  make pcb-ym2149     - Export YM2149 daughterboard fab files via tscircuit (Gerbers, drill, BOM, CPL)"
 	@echo "  make pcb            - Alias for 'make pcb-32pin'"
 	@echo "  make pcb-check      - Fast route + DRC check of both boards (no gerbers)"
 	@echo "  make schematic      - Export 32-pin schematic SVG/PNG"

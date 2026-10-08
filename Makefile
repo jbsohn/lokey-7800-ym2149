@@ -3,9 +3,9 @@
 
 .PHONY: all roms examples bank color_test rom a78 \
         logic pld \
-        pcb pcb-28pin pcb-32pin pcb-check pcb-verify freerouting \
-        schematic schematic-28pin schematic-32pin \
-        previews previews-28pin previews-32pin \
+        pcb pcb-28pin pcb-32pin pcb-ym2149 fab-ym2149 pcb-check pcb-verify freerouting \
+        schematic schematic-28pin schematic-32pin schematic-ym2149 \
+        previews previews-28pin previews-32pin previews-ym2149 \
         clean distclean help
 
 all: roms logic
@@ -44,6 +44,12 @@ pcb-28pin:
 pcb-32pin:
 	@$(MAKE) -C pcb pcb-32pin
 
+pcb-ym2149:
+	@$(MAKE) -C pcb pcb-ym2149
+
+fab-ym2149:
+	@$(MAKE) -C pcb fab-ym2149
+
 pcb-check:
 	@$(MAKE) -C pcb pcb-check
 
@@ -62,6 +68,9 @@ schematic-28pin:
 schematic-32pin:
 	@$(MAKE) -C pcb schematic-32pin
 
+schematic-ym2149:
+	@$(MAKE) -C pcb schematic-ym2149
+
 previews:
 	@$(MAKE) -C pcb previews
 
@@ -70,6 +79,9 @@ previews-28pin:
 
 previews-32pin:
 	@$(MAKE) -C pcb previews-32pin
+
+previews-ym2149:
+	@$(MAKE) -C pcb previews-ym2149
 
 # --- Clean Targets ---
 clean:
@@ -98,6 +110,7 @@ help:
 	@echo "  make logic      - Compile PLD fuse maps (.jed via galette)"
 	@echo "  make pcb        - Route and export 32-pin PCB Gerbers"
 	@echo "  make pcb-28pin  - Route and export 28-pin PCB Gerbers"
+	@echo "  make pcb-ym2149 - Export YM2149 daughterboard fab files via tscircuit"
 	@echo "  make pcb-check  - Fast route + DRC check of both boards"
 	@echo "  make previews   - Render PCB SVG previews and 3D PNG"
 	@echo "  make clean      - Clean build artifacts across all subprojects"
