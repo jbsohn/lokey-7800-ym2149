@@ -12,6 +12,9 @@ import { ICSPHeader } from "./ICSPHeader";
  *  - Full 8-bit IOA0–IOA7 port on MCU PORTC (supports 32-pin bank-switching)
  *  - 27 MHz crystal oscillator + 3-channel analog RC low-pass reconstruction filters
  *  - Standard 6-pin ICSP programming header
+ *
+ * Based on the AVR-AY project by Yevgeniy Olexandrenko (https://www.avray.ru/,
+ * https://github.com/Yevgeniy-Olexandrenko/avr-ay-board).
  */
 export default () => (
   <board

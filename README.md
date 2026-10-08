@@ -2,7 +2,8 @@
 
 > **Status:** Physical v0.2 PCBs (28-pin and 32-pin) have arrived and are **both bench-validated and working on real
 hardware**! Both boards require the same two bodge wires on the v0.2 prototypes: **#1 ROM `/OE` ground** (pin 22 on
-> 28-pin, pin 24 on 32-pin), and **#2 audio output** (`SUM_NODE` to Cart Pin 18 `Exaudio`). The 28-pin board is validated
+> 28-pin, pin 24 on 32-pin), and **#2 audio output** (`SUM_NODE` to Cart Pin 18 `Exaudio`). The 28-pin board is
+> validated
 > with 32 KB ROM; the 32-pin board is confirmed booting, bank switching across 14 banks in a 256 KB EPROM (ST M27C2001),
 > and playing clean YM2149 audio. Power-on reset behavior was fixed on hardware with a CD40106 Schmitt-trigger delay
 > buffer and integrated into the v0.3 PCB layout for both boards —
@@ -59,8 +60,9 @@ play music from the ST era or new compositions from modern trackers.
     - **32-Pin Board**: Single YM2149, ATF22V10 PLD, native DIP-32 / PLCC-32 combo socket with software bank switching
       via the YM IOA port (fixed 32KB code bank at `$8000–$FFFF` + switched 16KB data window at `$4000–$7FFF`, up to
       512KB / 32 banks).
-    - **YM2149 Daughterboard**: ATmega324-based carrier board (40-pin DIP footprint) providing an AVR-based drop-in
-      YM2149 replacement.
+    - **YM2149 Daughterboard (OPTIONAL)**: ATmega324-based carrier board (40-pin DIP footprint) providing an AVR-based
+      drop-in YM2149 replacement. **Strictly optional** — standard cartridges do not require this and natively run with
+      authentic through-hole DIP-40 YM2149, KC89C72, or AY-3-8910 chips.
 - **Automated PCB & PLD CI Pipeline**:
     - **GitHub Actions**: Rebuilds PLD logic (`.jed`) and all PCBs from source on every push/PR via a containerized
       toolchain (KiCad 10, Freerouting v2.4.1, galette 0.3.0). Tagged releases (`v*`) automatically package and publish
@@ -114,11 +116,16 @@ Test in-browser using custom **js7800** fork:
 
 ### PCB Previews & 3D Renders
 
-| Board                    |                                                                                                             Front View                                                                                                              |                                                                                                            Back View                                                                                                             |                                                                                                         3D Render                                                                                                          |
-|:-------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| **28-Pin Fixed ROM**     |  [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_28pin.png" width="160" alt="28-Pin Front" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_28pin.png)  |  [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_28pin.png" width="160" alt="28-Pin Back" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_28pin.png)  |  [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_28pin.png" width="300" alt="28-Pin 3D" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_28pin.png)  |
-| **32-Pin Bank-Switched** |  [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_32pin.png" width="160" alt="32-Pin Front" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_32pin.png)  |  [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_32pin.png" width="160" alt="32-Pin Back" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_32pin.png)  |  [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_32pin.png" width="300" alt="32-Pin 3D" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_32pin.png)  |
-| **YM2149 Daughterboard** | [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_ym2149.png" width="160" alt="YM2149 Front" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_ym2149.png) | [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_ym2149.png" width="160" alt="YM2149 Back" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_ym2149.png) | [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_ym2149.png" width="300" alt="YM2149 3D" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_ym2149.png) |
+> [!NOTE]
+> The **28-Pin** and **32-Pin** cartridge PCBs are the primary boards and operate natively with real through-hole DIP-40
+sound chips (YM2149, KC89C72, or AY-3-8910). The **YM2149 Daughterboard** is **completely optional**, designed solely as
+an AVR-based drop-in carrier alternative for the 40-pin sound chip socket.
+
+| Board                               |                                                                                                             Front View                                                                                                              |                                                                                                            Back View                                                                                                             |                                                                                                         3D Render                                                                                                          |
+|:------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| **28-Pin Fixed ROM**                |  [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_28pin.png" width="160" alt="28-Pin Front" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_28pin.png)  |  [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_28pin.png" width="160" alt="28-Pin Back" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_28pin.png)  |  [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_28pin.png" width="300" alt="28-Pin 3D" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_28pin.png)  |
+| **32-Pin Bank-Switched**            |  [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_32pin.png" width="160" alt="32-Pin Front" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_32pin.png)  |  [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_32pin.png" width="160" alt="32-Pin Back" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_32pin.png)  |  [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_32pin.png" width="300" alt="32-Pin 3D" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_32pin.png)  |
+| **YM2149 Daughterboard (Optional)** | [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_ym2149.png" width="160" alt="YM2149 Front" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_ym2149.png) | [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_ym2149.png" width="160" alt="YM2149 Back" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_ym2149.png) | [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_ym2149.png" width="300" alt="YM2149 3D" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_ym2149.png) |
 
 Full high-resolution views and schematics are detailed in [docs/PCB.md](docs/PCB.md).
 
@@ -169,6 +176,10 @@ This project is organized across 3 dedicated repositories:
   mapping recommendation.
 - **Arnaud Carré (Leonard/OXG)**: For the pioneering [StSound](https://github.com/arnaud-carre/StSound) project and
   research into the Atari ST sound architecture.
+- **Yevgeniy
+  Olexandrenko ([AVR-AY](https://www.avray.ru/) / [avr-ay-board](https://github.com/Yevgeniy-Olexandrenko/avr-ay-board))**:
+  For the **AVR-AY** project and ATmega-based AY-3-8910 / YM2149 emulator hardware designs, which inspired the optional
+  40-pin daughterboard carrier module (`pcb/ym2149.circuit.tsx`).
 - **The Atari Community**: We are grateful to the dedicated homebrew developers and fans keeping both 8-bit and 16-bit
   Atari platforms vibrant.
 

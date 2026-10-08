@@ -7,14 +7,18 @@ sound card cartridge.
 
 ## PCB Overview
 
-Each board is a 2-layer cartridge PCB designed to fit standard Atari 7800 cartridge shells. Component placements, net
-connections, and board outlines are defined using **tscircuit** (React TSX).
+The primary project boards are 2-layer cartridge PCBs designed to fit standard Atari 7800 cartridge shells. Both
+cartridges natively accept standard, authentic through-hole DIP-40 sound chips (**YM2149**, **KC89C72**, or
+**AY-3-8910**). An **optional** daughterboard module is also provided. Component placements, net connections, and board
+outlines are defined using **tscircuit** (React TSX).
 
-- **`pcb/28pin.circuit.tsx`**: Single YM2149, ATF16V8B PLD, solder-jumper ROM size selection. Hardware
-  spec: [Hardware-28pin.md](Hardware-28pin.md).
-- **`pcb/32pin.circuit.tsx`**: Single YM2149, ATF22V10 PLD, native DIP-32 socket with software bank switching. Hardware
-  spec: [Hardware-32pin.md](Hardware-32pin.md).
-- **`pcb/ym2149.circuit.tsx`**: ATmega324-based YM2149 daughterboard carrier (40-pin DIP footprint).
+- **`pcb/28pin.circuit.tsx` (Primary Cartridge)**: Single YM2149, ATF16V8B PLD, solder-jumper ROM size selection.
+  Hardware spec: [Hardware-28pin.md](Hardware-28pin.md).
+- **`pcb/32pin.circuit.tsx` (Primary Cartridge)**: Single YM2149, ATF22V10 PLD, native DIP-32 socket with software bank
+  switching. Hardware spec: [Hardware-32pin.md](Hardware-32pin.md).
+- **`pcb/ym2149.circuit.tsx` (OPTIONAL Daughterboard Carrier)**: ATmega324-based drop-in replacement carrier module
+  (40-pin DIP footprint). **This board is strictly optional**; standard cartridges do not require it and run natively
+  with authentic DIP-40 PSG chips.
 - **v0.2 Hardware Errata & Revisions**: [PCB-Revisions-v0.2.md](PCB-Revisions-v0.2.md) (known physical board errata and
   planned fixes for v0.3).
 
@@ -25,6 +29,8 @@ connections, and board outlines are defined using **tscircuit** (React TSX).
 > [!NOTE]
 > These previews link to the [latest GitHub Release](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest) build
 artifacts, reflecting the most recently tagged `v*` release.
+> The **28-Pin** and **32-Pin** boards are the primary cartridge PCBs. The **YM2149 Daughterboard** is an **optional**
+drop-in module for the 40-pin sound chip socket.
 
 ### 28-Pin Board Previews
 
@@ -38,7 +44,7 @@ artifacts, reflecting the most recently tagged `v*` release.
 |:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
 | [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_32pin.png" width="200" alt="32-Pin PCB Front" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_front_32pin.png) | [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_32pin.png" width="200" alt="32-Pin PCB Back" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_back_32pin.png) | [<img src="https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_32pin.png" width="400" alt="32-Pin PCB 3D" />](https://github.com/jbsohn/lokey-7800-ym2149/releases/latest/download/pcb_3d_32pin.png) |
 
-### YM2149 Daughterboard Previews
+### YM2149 Daughterboard Previews (Optional)
 
 |                                                                                                         Front View (Top Copper)                                                                                                         |                                                                                                      Back View (Bottom Copper)                                                                                                       |                                                                                                     3D Render (Isometric)                                                                                                      |
 |:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
