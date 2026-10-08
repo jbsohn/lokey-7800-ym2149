@@ -5,8 +5,8 @@ import { type ChipProps } from "tscircuit";
  * Pin mapping follows standard Microchip / Atmel TQFP-44 pinout:
  *   PORTA (Pins 37..30): DA0..DA7 (PSG Data Bus)
  *   PORTC (Pins 19..26): IOA0..IOA7 (PSG General-Purpose Port A / Bank Switching)
- *   PD2 (Pin 11): INT0 / BDIR bus control
- *   PD3 (Pin 12): INT1 / BC1 bus control
+ *   PD2 (Pin 11): INT0 / BC1 bus control
+ *   PD3 (Pin 12): INT1 / BDIR bus control
  *   PD5 (Pin 14): OC1A / Audio PWM Channel A
  *   PD7 (Pin 16): OC2A / Audio PWM Channel B
  *   PD4 (Pin 13): OC1B / Audio PWM Channel C

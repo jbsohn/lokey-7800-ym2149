@@ -338,6 +338,11 @@ function writeProjectAndCustomRules(rules: BoardRules): void {
   // Custom rules: J1 card edge clearance and escape clearances through connector notch
   const dru = `(version 1)
 
+# Board copper clearance (standard 0.15mm / 6 mil)
+(rule "board_clearance"
+  (constraint clearance (min 0.15mm))
+)
+
 # J1 is an Atari 7800 card-edge connector — pads intentionally sit at the board edge.
 (rule "J1_card_edge_clearance"
   (constraint edge_clearance (min 0mm))

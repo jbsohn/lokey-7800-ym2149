@@ -84,6 +84,20 @@ jobs:
           cp pcb/build/pcb_3d_32pin.png pcb_3d_32pin.png
           cp pcb/build/schematic-32pin.png schematic-32pin.png
 
+      - name: Build YM2149 Daughterboard PCB
+        run: |
+          make pcb-ym2149
+          make schematic-ym2149
+          make previews-ym2149
+
+      - name: Collect YM2149 gerbers and previews
+        run: |
+          cp pcb/build/gerbers-ym2149.zip gerbers-ym2149.zip
+          cp pcb/build/pcb_front_ym2149.png pcb_front_ym2149.png
+          cp pcb/build/pcb_back_ym2149.png pcb_back_ym2149.png
+          cp pcb/build/pcb_3d_ym2149.png pcb_3d_ym2149.png
+          cp pcb/build/schematic-ym2149.png schematic-ym2149.png
+
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -91,14 +105,19 @@ jobs:
           path: |
             gerbers-28pin.zip
             gerbers-32pin.zip
+            gerbers-ym2149.zip
             pcb_front_28pin.png
             pcb_back_28pin.png
             pcb_3d_28pin.png
             pcb_front_32pin.png
             pcb_back_32pin.png
             pcb_3d_32pin.png
+            pcb_front_ym2149.png
+            pcb_back_ym2149.png
+            pcb_3d_ym2149.png
             schematic-28pin.png
             schematic-32pin.png
+            schematic-ym2149.png
             pld/build/*.jed
 
       - name: Create GitHub Release
@@ -109,12 +128,17 @@ jobs:
           files: |
             gerbers-28pin.zip
             gerbers-32pin.zip
+            gerbers-ym2149.zip
             pcb_front_28pin.png
             pcb_back_28pin.png
             pcb_3d_28pin.png
             pcb_front_32pin.png
             pcb_back_32pin.png
             pcb_3d_32pin.png
+            pcb_front_ym2149.png
+            pcb_back_ym2149.png
+            pcb_3d_ym2149.png
             schematic-28pin.png
             schematic-32pin.png
+            schematic-ym2149.png
             pld/build/*.jed
