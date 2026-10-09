@@ -37,7 +37,7 @@ Optional refinements (board works without either of these, just with some rough 
 | U_LATCH | 74HCT373 | DIP-20, 0.3" | top    | Octal transparent latch — D0-D7 to YM DA0-DA7                                                                               |
 | U_RESET | CD40106  | DIP-14, 0.3" | bottom | Hex Schmitt-trigger inverter — active reset delay buffer (silences BIOS noise)                                              |
 | U_ROM   | 27C256   | DIP-28, 0.6" | top    | Program ROM (image burned per build)                                                                                        |
-| U_YM    | YM2149   | DIP-40, 0.6" | top    | Programmable sound generator (AY-3-8910 largely pin-compatible; or optional `pcb/ym2149.circuit.tsx` daughterboard carrier) |
+| U_YM    | YM2149   | DIP-40, 0.6" | top    | Programmable sound generator (AY-3-8910 largely pin-compatible; or optional [YM2149 daughterboard carrier](BOM-ym2149.md)) |
 
 ## Resistors
 

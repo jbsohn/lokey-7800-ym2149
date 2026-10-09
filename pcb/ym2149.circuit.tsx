@@ -234,6 +234,7 @@ export default () => (
     <chip
       name="LED1"
       footprint="0603"
+      supplierPartNumbers={{ jlcpcb: ["C72043"] }}
       pcbX="2mm"
       pcbY="20mm"
       schX={-8}

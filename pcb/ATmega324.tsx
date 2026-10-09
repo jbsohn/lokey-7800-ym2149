@@ -20,6 +20,7 @@ export const ATmega324 = (props: ChipProps) => (
   <chip
     {...props}
     manufacturerPartNumber="ATMEGA324PB-AU"
+    supplierPartNumbers={{ jlcpcb: ["C47751"] }}
     footprint="tqfp44"
     pinLabels={{
       1: "PB5_MOSI",

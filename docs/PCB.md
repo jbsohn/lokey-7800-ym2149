@@ -18,7 +18,7 @@ outlines are defined using **tscircuit** (React TSX).
   switching. Hardware spec: [Hardware-32pin.md](Hardware-32pin.md).
 - **`pcb/ym2149.circuit.tsx` (OPTIONAL Daughterboard Carrier)**: ATmega324-based drop-in replacement carrier module
   (40-pin DIP footprint). **This board is strictly optional**; standard cartridges do not require it and run natively
-  with authentic DIP-40 PSG chips.
+  with authentic DIP-40 PSG chips. Bill of Materials: [BOM-ym2149.md](BOM-ym2149.md).
 - **v0.2 Hardware Errata & Revisions**: [PCB-Revisions-v0.2.md](PCB-Revisions-v0.2.md) (known physical board errata and
   planned fixes for v0.3).
 

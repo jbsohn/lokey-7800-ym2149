@@ -49,7 +49,7 @@ Both bodges from the 28-pin board are required on the v0.2 32-pin board:
 | U_RESET    | CD40106              | DIP-14, 0.3" | bottom | Hex Schmitt-trigger inverter — active reset delay buffer (silences BIOS noise)                                              |
 | U_ROM      | 27C010/27C020/27C040 | DIP-32, 0.6" | top    | Program ROM (DIP option; mutually exclusive with U_ROM_PLCC)                                                                |
 | U_ROM_PLCC | SST39SF010A/020A/040 | PLCC-32 SMD  | top    | Program Flash (PLCC option; mutually exclusive with U_ROM)                                                                  |
-| U_YM       | YM2149               | DIP-40, 0.6" | top    | Programmable sound generator (AY-3-8910 largely pin-compatible; or optional `pcb/ym2149.circuit.tsx` daughterboard carrier) |
+| U_YM       | YM2149               | DIP-40, 0.6" | top    | Programmable sound generator (AY-3-8910 largely pin-compatible; or optional [YM2149 daughterboard carrier](BOM-ym2149.md)) |
 
 ## Resistors
 
