@@ -14,8 +14,8 @@ endif
 export KICAD_CLI
 
 # --- Freerouting Setup ---
-FREEROUTING_VERSION   ?= 2.4.1
-FREEROUTING_SHA256    ?= 251101c3eeac22d7e7dfcf6796603279e5d1000283eb82d8f093780f7afc6aa9
+FREEROUTING_VERSION   ?= 2.5.0
+FREEROUTING_SHA256    ?= f6f51bb02245e8e717f9359bd260cc9c5c0b1bc0acc8b7cb2cd5b8ffeb5de3c7
 FREEROUTING_URL       ?= https://github.com/freerouting/freerouting/releases/download/v$(FREEROUTING_VERSION)/freerouting-$(FREEROUTING_VERSION).jar
 FREEROUTING_LOCAL     := .tools/freerouting-$(FREEROUTING_VERSION).jar
 SHA256                := $(shell command -v sha256sum >/dev/null 2>&1 && echo sha256sum || echo shasum -a 256)
@@ -24,6 +24,10 @@ ifndef FREEROUTING_BIN
   FREEROUTING_JAR     ?= $(abspath $(FREEROUTING_LOCAL))
 endif
 export FREEROUTING_JAR
+
+# Disable Freerouting's post-routing optimization stage to save build time
+export FREEROUTING__ROUTER__OPTIMIZER__ENABLED    := false
+export FREEROUTING__ROUTER__OPTIMIZER__MAX_PASSES := 0
 
 FREEROUTING_DEP       := $(if $(filter $(abspath $(FREEROUTING_LOCAL)),$(FREEROUTING_JAR)),$(FREEROUTING_LOCAL))
 
@@ -55,11 +59,11 @@ $(FREEROUTING_LOCAL):
 # --- PCB Build Rules ---
 $(BUILD_DIR)/index-28pin.kicad_pcb: 28pin.circuit.tsx node_modules $(FREEROUTING_DEP) $(TS_COMPONENTS)
 	@echo "Routing and exporting 28-pin PCB from tscircuit..."
-	@bun build-pcb.ts 28pin.circuit.tsx
+	@python3 build_kicad.py 28pin.circuit.tsx
 
 $(BUILD_DIR)/index-32pin.kicad_pcb: 32pin.circuit.tsx node_modules $(FREEROUTING_DEP) $(TS_COMPONENTS)
 	@echo "Routing and exporting 32-pin PCB from tscircuit..."
-	@bun build-pcb.ts 32pin.circuit.tsx
+	@python3 build_kicad.py 32pin.circuit.tsx
 
 pcb-28pin: $(BUILD_DIR)/index-28pin.kicad_pcb
 
@@ -67,7 +71,7 @@ pcb-32pin: $(BUILD_DIR)/index-32pin.kicad_pcb
 
 $(BUILD_DIR)/index-ym2149.kicad_pcb: ym2149.circuit.tsx node_modules $(FREEROUTING_DEP) $(TS_COMPONENTS)
 	@echo "Routing and exporting YM2149 daughterboard from tscircuit..."
-	@bun build-pcb.ts ym2149.circuit.tsx
+	@python3 build_kicad.py ym2149.circuit.tsx
 
 pcb-ym2149: $(BUILD_DIR)/index-ym2149.kicad_pcb
 
@@ -80,9 +84,9 @@ pcb-verify: $(BUILD_DIR)/index-28pin.kicad_pcb $(BUILD_DIR)/index-32pin.kicad_pc
 
 # Fast check: route all boards and run the DRC gate, without writing gerbers.
 pcb-check: node_modules $(FREEROUTING_DEP)
-	@bun build-pcb.ts 28pin.circuit.tsx --check
-	@bun build-pcb.ts 32pin.circuit.tsx --check
-	@bun build-pcb.ts ym2149.circuit.tsx --check
+	@python3 build_kicad.py 28pin.circuit.tsx --check
+	@python3 build_kicad.py 32pin.circuit.tsx --check
+	@python3 build_kicad.py ym2149.circuit.tsx --check
 
 # --- Schematic Exports ---
 $(BUILD_DIR)/schematic-28pin.svg: 28pin.circuit.tsx node_modules

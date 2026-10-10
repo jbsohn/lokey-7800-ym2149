@@ -8,6 +8,7 @@ export const Crystal3225 = (props: ChipProps) => (
   <chip
     {...props}
     manufacturerPartNumber="X3S027000BA1H-U"
+    supplierPartNumbers={{ jlcpcb: ["C136079"] }}
     pinLabels={{
       1: "XTAL1",
       2: "GND",

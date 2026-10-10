@@ -26,7 +26,7 @@ DIP-40 sound chip, an optional daughterboard module is provided:
 * **`pcb/ym2149.circuit.tsx`**: A 40-pin DIP form-factor carrier module powered by an **ATmega324** (TQFP-44) running at
   5V, featuring 3-channel PWM audio outputs with RC low-pass filters, single-cycle 8-bit bus reads (`PORTA`), and full
   8-bit `IOA` bank-switching pass-through (`PORTC`). It plugs directly into the standard 40-pin DIP `U_YM` socket on
-  either cartridge board as a drop-in replacement. Based on the [AVR-AY project](https://www.avray.ru/) and [avr-ay-board](https://github.com/Yevgeniy-Olexandrenko/avr-ay-board) by Yevgeniy Olexandrenko.
+  either cartridge board as a drop-in replacement. Based on the [AVR-AY project](https://www.avray.ru/) and [avr-ay-board](https://github.com/Yevgeniy-Olexandrenko/avr-ay-board) by Yevgeniy Olexandrenko. Bill of Materials: [BOM-ym2149.md](BOM-ym2149.md).
 
 Everything below this section — the memory map and connector/chip pinout references — applies to both primary cartridge
 boards.
