@@ -40,8 +40,12 @@ ZIP_PATH = os.path.join(BUILD_DIR, f"gerbers-{BOARD_NAME}.zip")
 
 FREEROUTING_JAR = os.environ.get(
     "FREEROUTING_JAR",
-    os.path.join(SCRIPT_DIR, ".tools", "freerouting-2.4.1.jar")
+    os.path.join(SCRIPT_DIR, ".tools", "freerouting-2.5.0.jar")
 )
+
+# Disable Freerouting's post-routing optimizer stage by default to save build time
+os.environ.setdefault("FREEROUTING__ROUTER__OPTIMIZER__ENABLED", "false")
+os.environ.setdefault("FREEROUTING__ROUTER__OPTIMIZER__MAX_PASSES", "0")
 
 def log(msg):
     print(f"\n===> {msg}")

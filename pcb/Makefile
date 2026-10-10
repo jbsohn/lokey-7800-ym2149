@@ -14,8 +14,8 @@ endif
 export KICAD_CLI
 
 # --- Freerouting Setup ---
-FREEROUTING_VERSION   ?= 2.4.1
-FREEROUTING_SHA256    ?= 251101c3eeac22d7e7dfcf6796603279e5d1000283eb82d8f093780f7afc6aa9
+FREEROUTING_VERSION   ?= 2.5.0
+FREEROUTING_SHA256    ?= f6f51bb02245e8e717f9359bd260cc9c5c0b1bc0acc8b7cb2cd5b8ffeb5de3c7
 FREEROUTING_URL       ?= https://github.com/freerouting/freerouting/releases/download/v$(FREEROUTING_VERSION)/freerouting-$(FREEROUTING_VERSION).jar
 FREEROUTING_LOCAL     := .tools/freerouting-$(FREEROUTING_VERSION).jar
 SHA256                := $(shell command -v sha256sum >/dev/null 2>&1 && echo sha256sum || echo shasum -a 256)
@@ -24,6 +24,10 @@ ifndef FREEROUTING_BIN
   FREEROUTING_JAR     ?= $(abspath $(FREEROUTING_LOCAL))
 endif
 export FREEROUTING_JAR
+
+# Disable Freerouting's post-routing optimization stage to save build time
+export FREEROUTING__ROUTER__OPTIMIZER__ENABLED    := false
+export FREEROUTING__ROUTER__OPTIMIZER__MAX_PASSES := 0
 
 FREEROUTING_DEP       := $(if $(filter $(abspath $(FREEROUTING_LOCAL)),$(FREEROUTING_JAR)),$(FREEROUTING_LOCAL))
 
